@@ -18,7 +18,8 @@ package com.google.ar.core.examples.java.common.helpers;
 import android.app.Activity;
 import android.view.View;
 
-/** Helper to set up the Android full screen mode. */
+/** Helper to set up the Android full screen mode.
+ * 设置Android全屏模式的助手。*/
 public final class FullScreenHelper {
   /**
    * Sets the Android fullscreen flags. Expected to be called from {@link
@@ -40,7 +41,7 @@ public final class FullScreenHelper {
                   | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                   | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                   | View.SYSTEM_UI_FLAG_FULLSCREEN
-                  | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                  | View.SYSTEM_UI_FLAG_IMMERSIVE); // 沉浸模式
     }
   }
 }

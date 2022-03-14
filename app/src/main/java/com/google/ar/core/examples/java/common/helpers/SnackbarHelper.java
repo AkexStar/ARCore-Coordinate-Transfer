@@ -23,7 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 /**
  * Helper to manage the sample snackbar. Hides the Android boilerplate code, and exposes simpler
- * methods.
+ * methods.管理snackbar的助手。隐藏 Android 样板代码，并公开更简单的方法。
  */
 public final class SnackbarHelper {
   private static final int BACKGROUND_COLOR = 0xbf323232;

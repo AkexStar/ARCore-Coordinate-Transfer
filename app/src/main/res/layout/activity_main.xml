@@ -14,6 +14,7 @@
    limitations under the License.
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -36,6 +37,64 @@
       android:layout_marginEnd="25dp"
       android:layout_marginBottom="25dp"
       android:background="@android:color/transparent"
-      android:src="@drawable/ic_settings" />
+      android:src="@drawable/ic_settings"
+      tools:ignore="SpeakableTextPresentCheck" />
+
+  <Button
+      android:id="@+id/playback_button"
+      style="@style/Widget.AppCompat.Button.Borderless"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignTop="@id/settings_button"
+      android:layout_alignBottom="@id/settings_button"
+      android:layout_marginStart="25dp"
+      android:layout_marginTop="4dp"
+      android:layout_marginEnd="70dp"
+      android:layout_marginBottom="-4dp"
+      android:layout_toStartOf="@id/settings_button"
+      android:onClick="onClickPlayback"
+      android:text="@string/playback"
+      android:textAlignment="center"
+      android:textColor="@android:color/holo_green_light"
+      android:textStyle="bold"
+      tools:ignore="TouchTargetSizeCheck" />
+
+  <Button
+      android:id="@+id/record_button"
+      style="@style/Widget.AppCompat.Button.Borderless"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignTop="@+id/settings_button"
+      android:layout_alignBottom="@+id/settings_button"
+      android:layout_alignParentStart="true"
+      android:layout_marginStart="25dp"
+      android:layout_marginTop="4dp"
+      android:layout_marginBottom="-4dp"
+      android:onClick="onClickRecord"
+      android:text="@string/record"
+      android:textAlignment="center"
+      android:textColor="@android:color/holo_red_light"
+      android:textStyle="bold" />
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:maxLines="3"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textColor="#ABFFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.108"
+        tools:text="测试数据" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
 
 </RelativeLayout>

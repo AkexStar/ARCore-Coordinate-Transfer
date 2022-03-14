@@ -35,6 +35,7 @@ import java.util.HashMap;
  * This class both renders the AR camera background and composes the a scene foreground. The camera
  * background can be rendered as either camera image data or camera depth data. The virtual scene
  * can be composited with or without depth occlusion.
+ * 此类既渲染 AR 相机背景，又构成场景前景。相机背景可以渲染为相机图像数据或相机深度数据。可以在有或没有深度遮挡的情况下合成虚拟场景。
  */
 public class BackgroundRenderer {
   private static final String TAG = BackgroundRenderer.class.getSimpleName();
@@ -77,6 +78,9 @@ public class BackgroundRenderer {
    * Allocates and initializes OpenGL resources needed by the background renderer. Must be called
    * during a {@link SampleRender.Renderer} callback, typically in {@link
    * SampleRender.Renderer#onSurfaceCreated()}.
+   * 分配和初始化后台渲染器所需的 OpenGL 资源。
+   * 必须在 {@link SampleRender.Renderer} 回调期间调用，
+   * 通常在 {@link SampleRender.Renderer#onSurfaceCreated()} 中。
    */
   public BackgroundRenderer(SampleRender render) {
     cameraColorTexture =

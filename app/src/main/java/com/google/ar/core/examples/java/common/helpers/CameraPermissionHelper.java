@@ -29,24 +29,27 @@ public final class CameraPermissionHelper {
   private static final int CAMERA_PERMISSION_CODE = 0;
   private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
 
-  /** Check to see we have the necessary permissions for this app. */
+  /** Check to see we have the necessary permissions for this app. 检查我们是否拥有此应用程序的必要权限。*/
   public static boolean hasCameraPermission(Activity activity) {
     return ContextCompat.checkSelfPermission(activity, CAMERA_PERMISSION)
         == PackageManager.PERMISSION_GRANTED;
   }
 
-  /** Check to see we have the necessary permissions for this app, and ask for them if we don't. */
+  /** Check to see we have the necessary permissions for this app, and ask for them if we don't.
+   * 检查我们是否拥有此应用程序的必要权限，如果没有，请询问他们。*/
   public static void requestCameraPermission(Activity activity) {
     ActivityCompat.requestPermissions(
         activity, new String[] {CAMERA_PERMISSION}, CAMERA_PERMISSION_CODE);
   }
 
-  /** Check to see if we need to show the rationale for this permission. */
+  /** Check to see if we need to show the rationale for this permission.
+   * 检查我们是否需要展示此许可的理由。*/
   public static boolean shouldShowRequestPermissionRationale(Activity activity) {
     return ActivityCompat.shouldShowRequestPermissionRationale(activity, CAMERA_PERMISSION);
   }
 
-  /** Launch Application Setting to grant permission. */
+  /** Launch Application Setting to grant permission.
+   * 启动应用程序设置以授予权限。*/
   public static void launchPermissionSettings(Activity activity) {
     Intent intent = new Intent();
     intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
