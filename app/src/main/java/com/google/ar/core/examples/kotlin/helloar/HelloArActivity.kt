@@ -112,13 +112,13 @@ class HelloArActivity : AppCompatActivity() {
     view = HelloArView(this)
     lifecycle.addObserver(view)
     setContentView(view.root)
+    textView = findViewById<View>(R.id.textView) as TextView
     // Sets up an example renderer using our HelloARRenderer.
     // 使用我们的 HelloARRenderer 设置示例渲染器。
     SampleRender(view.surfaceView, renderer, assets)
     // 渲染深度设置与即时放置按钮
     depthSettings.onCreate(this)
     instantPlacementSettings.onCreate(this)
-    textView = findViewById<View>(R.id.textView) as TextView
   }
 
   // Configure the session, using Lighting Estimation, and Depth mode.

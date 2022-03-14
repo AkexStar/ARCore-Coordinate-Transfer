@@ -374,7 +374,12 @@ class HelloArRenderer(val activity: HelloArActivity) :
       camera.displayOrientedPose,
       projectionMatrix
     )
-
+//    if (activity.textView.text !== ""){
+//      val str = activity.textView.text.split("\n")
+//      activity.textView.text = str[0] + "\n" + projectionMatrix.contentToString()
+//    }else
+//      activity.textView.text = projectionMatrix.contentToString()
+    activity.textView.text = camera.pose.tx().toString() + " " + camera.pose.ty().toString() + " " + camera.pose.tz().toString()
     // -- Draw occluded virtual objects
 
     // Update lighting parameters in the shader
