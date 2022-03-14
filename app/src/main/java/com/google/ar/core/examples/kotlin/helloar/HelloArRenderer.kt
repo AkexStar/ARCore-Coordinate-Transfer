@@ -20,18 +20,7 @@ import android.opengl.Matrix
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.ar.core.Anchor
-import com.google.ar.core.Camera
-import com.google.ar.core.DepthPoint
-import com.google.ar.core.Frame
-import com.google.ar.core.InstantPlacementPoint
-import com.google.ar.core.LightEstimate
-import com.google.ar.core.Plane
-import com.google.ar.core.Point
-import com.google.ar.core.Session
-import com.google.ar.core.Trackable
-import com.google.ar.core.TrackingFailureReason
-import com.google.ar.core.TrackingState
+import com.google.ar.core.*
 import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper
 import com.google.ar.core.examples.java.common.helpers.TrackingStateHelper
 import com.google.ar.core.examples.java.common.samplerender.Framebuffer
@@ -56,8 +45,8 @@ class HelloArRenderer(val activity: HelloArActivity) :
     val TAG = "HelloArRenderer"
 
     // See the definition of updateSphericalHarmonicsCoefficients for an explanation of these
-    // constants.
-    private val sphericalHarmonicFactors =
+    // constants. 查看 更新球谐系数 来获取以下内容的解释
+    private val sphericalHarmonicFactors = // 球协因子系数？
       floatArrayOf(
         0.282095f,
         -0.325735f,
@@ -71,21 +60,23 @@ class HelloArRenderer(val activity: HelloArActivity) :
       )
 
     private val Z_NEAR = 0.1f
-    private val Z_FAR = 100f
+    private val Z_FAR = 80f //100
 
     // Assumed distance from the device camera to the surface on which user will try to place
-    // objects.
+    // objects. 从设备相机到用户将尝试放置对象的表面的假定距离。
     // This value affects the apparent scale of objects while the tracking method of the
     // Instant Placement point is SCREENSPACE_WITH_APPROXIMATE_DISTANCE.
+    // 此值会影响物体的表观比例，而 Instant Placement 点的跟踪方法是 SCREENSPACE_WITH_APPROXIMATE_DISTANCE。
     // Values in the [0.2, 2.0] meter range are a good choice for most AR experiences. Use lower
     // values for AR experiences where users are expected to place objects on surfaces close to the
     // camera. Use larger values for experiences where the user will likely be standing and trying
-    // to
-    // place an object on the ground or floor in front of them.
-    val APPROXIMATE_DISTANCE_METERS = 2.0f
+    // to place an object on the ground or floor in front of them.
+    // [0.2, 2.0] 米范围内的值是大多数 AR 体验的不错选择。对 AR 体验使用较低的值，用户需要将对象放置在靠近相机的表面上。
+    // 对于用户可能站立并试图将物体放在他们面前的地面或地板上的体验，请使用较大的值。
+    val APPROXIMATE_DISTANCE_METERS = 1.0f //2
 
     val CUBEMAP_RESOLUTION = 16
-    val CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES = 32
+    val CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES = 64 //32
   }
 
   lateinit var render: SampleRender
@@ -94,21 +85,23 @@ class HelloArRenderer(val activity: HelloArActivity) :
   lateinit var virtualSceneFramebuffer: Framebuffer
   var hasSetTextureNames = false
 
-  // Point Cloud
+  // Point Cloud 点云
   lateinit var pointCloudVertexBuffer: VertexBuffer
   lateinit var pointCloudMesh: Mesh
   lateinit var pointCloudShader: Shader
 
   // Keep track of the last point cloud rendered to avoid updating the VBO if point cloud
   // was not changed.  Do this using the timestamp since we can't compare PointCloud objects.
+  // 跟踪最后渲染的点云，以避免在未更改点云时更新 VBO。使用时间戳执行此操作，因为我们无法比较 PointCloud 对象。
   var lastPointCloudTimestamp: Long = 0
 
-  // Virtual object (ARCore pawn)
+  // Virtual object (ARCore pawn) 虚拟物体的变量
   lateinit var virtualObjectMesh: Mesh
   lateinit var virtualObjectShader: Shader
   lateinit var virtualObjectAlbedoTexture: Texture
   lateinit var virtualObjectAlbedoInstantPlacementTexture: Texture
 
+  // Anchor列表
   private val wrappedAnchors = mutableListOf<WrappedAnchor>()
 
   // Environmental HDR
@@ -116,6 +109,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
   lateinit var cubemapFilter: SpecularCubemapFilter
 
   // Temporary matrix allocated here to reduce number of allocations for each frame.
+  // 此处分配的临时矩阵以减少每帧的分配次数。
   val modelMatrix = FloatArray(16)
   val viewMatrix = FloatArray(16)
   val projectionMatrix = FloatArray(16)
@@ -127,6 +121,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
   val viewInverseMatrix = FloatArray(16)
   val worldLightDirection = floatArrayOf(0.0f, 0.0f, 0.0f, 0.0f)
   val viewLightDirection = FloatArray(4) // view x world light direction
+
 
   val session
     get() = activity.arCoreSessionHelper.session
@@ -144,8 +139,9 @@ class HelloArRenderer(val activity: HelloArActivity) :
   }
 
   override fun onSurfaceCreated(render: SampleRender) {
-    // Prepare the rendering objects.
+    // Prepare the rendering objects. 准备渲染对象
     // This involves reading shaders and 3D model files, so may throw an IOException.
+    // 这涉及读取着色器和 3D 模型文件，因此可能会引发 IOException。
     try {
       planeRenderer = PlaneRenderer(render)
       backgroundRenderer = BackgroundRenderer(render)
@@ -153,7 +149,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
 
       cubemapFilter =
         SpecularCubemapFilter(render, CUBEMAP_RESOLUTION, CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES)
-      // Load environmental lighting values lookup table
+      // Load environmental lighting values lookup table 加载环境照明值查找表
       dfgTexture =
         Texture(
           render,
@@ -162,6 +158,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
           /*useMipmaps=*/ false
         )
       // The dfg.raw file is a raw half-float texture with two channels.
+      // dfg.raw 文件是具有两个通道的原始半浮点纹理图
       val dfgResolution = 64
       val dfgChannels = 2
       val halfFloatSize = 2
@@ -171,6 +168,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
       activity.assets.open("models/dfg.raw").use { it.read(buffer.array()) }
 
       // SampleRender abstraction leaks here.
+      // 生成背景网格纹理
       GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, dfgTexture.textureId)
       GLError.maybeThrowGLException("Failed to bind DFG texture", "glBindTexture")
       GLES30.glTexImage2D(
@@ -186,7 +184,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
       )
       GLError.maybeThrowGLException("Failed to populate DFG texture", "glTexImage2D")
 
-      // Point cloud
+      // Point cloud 点云着色设置
       pointCloudShader =
         Shader.createFromAssets(
             render,
@@ -195,7 +193,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
             /*defines=*/ null
           )
           .setVec4("u_Color", floatArrayOf(31.0f / 255.0f, 188.0f / 255.0f, 210.0f / 255.0f, 1.0f))
-          .setFloat("u_PointSize", 5.0f)
+          .setFloat("u_PointSize", 3.0f)
 
       // four entries per vertex: X, Y, Z, confidence
       pointCloudVertexBuffer =
@@ -242,7 +240,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
           .setTexture("u_DfgTexture", dfgTexture)
     } catch (e: IOException) {
       Log.e(TAG, "Failed to read a required asset file", e)
-      showError("Failed to read a required asset file: $e")
+      showMessageError("未能读取所需的资源文件: $e") //Failed to read a required asset file
     }
   }
 
@@ -253,36 +251,40 @@ class HelloArRenderer(val activity: HelloArActivity) :
 
   override fun onDrawFrame(render: SampleRender) {
     val session = session ?: return
-
     // Texture names should only be set once on a GL thread unless they change. This is done during
     // onDrawFrame rather than onSurfaceCreated since the session is not guaranteed to have been
     // initialized during the execution of onSurfaceCreated.
+    // 纹理名称只能在 GL 线程上设置一次，除非它们更改。这是在 onDrawFrame 而不是 onSurfaceCreated 期间完成的，
+    // 因为不能保证会话在 onSurfaceCreated 执行期间已被初始化。
     if (!hasSetTextureNames) {
       session.setCameraTextureNames(intArrayOf(backgroundRenderer.cameraColorTexture.textureId))
       hasSetTextureNames = true
     }
-
-    // -- Update per-frame state
-
+    // -- Update per-frame state 更新每帧状态
     // Notify ARCore session that the view size changed so that the perspective matrix and
     // the video background can be properly adjusted.
+    // 通知 ARCore 会话视图大小已更改，以便可以正确调整透视矩阵和视频背景。
     displayRotationHelper.updateSessionIfNeeded(session)
-
     // Obtain the current frame from ARSession. When the configuration is set to
     // UpdateMode.BLOCKING (it is by default), this will throttle the rendering to the
     // camera framerate.
+    // 从 ARSession 获取当前帧。当配置设置为 UpdateMode.BLOCKING（默认情况下）时，这会将渲染限制为相机帧速率。
     val frame =
       try {
         session.update()
       } catch (e: CameraNotAvailableException) {
         Log.e(TAG, "Camera not available during onDrawFrame", e)
-        showError("Camera not available. Try restarting the app.")
+        showMessageError("相机不可用,请重启App") //Camera not available. Try restarting the app.
         return
       }
-
+    if (activity.appState == HelloArActivity.AppState.Playingback && // 停止播放就不再更新Frame
+            activity.arCoreSessionHelper.session?.playbackStatus == PlaybackStatus.FINISHED){
+              activity.runOnUiThread{activity.stopPlayingback()}
+              return
+    }
     val camera = frame.camera
-
     // Update BackgroundRenderer state to match the depth settings.
+    // 更新 BackgroundRenderer 状态以匹配深度设置。
     try {
       backgroundRenderer.setUseDepthVisualization(
         render,
@@ -291,12 +293,12 @@ class HelloArRenderer(val activity: HelloArActivity) :
       backgroundRenderer.setUseOcclusion(render, activity.depthSettings.useDepthForOcclusion())
     } catch (e: IOException) {
       Log.e(TAG, "Failed to read a required asset file", e)
-      showError("Failed to read a required asset file: $e")
+      showMessageError("未能读取所需的资源文件: $e") // Failed to read a required asset file
       return
     }
-
     // BackgroundRenderer.updateDisplayGeometry must be called every frame to update the coordinates
     // used to draw the background camera image.
+    // 必须每帧调用 BackgroundRenderer.updateDisplayGeometry 以更新用于绘制背景摄像机图像的坐标。
     backgroundRenderer.updateDisplayGeometry(frame)
     val shouldGetDepthImage =
       activity.depthSettings.useDepthForOcclusion() ||
@@ -309,17 +311,17 @@ class HelloArRenderer(val activity: HelloArActivity) :
       } catch (e: NotYetAvailableException) {
         // This normally means that depth data is not available yet. This is normal so we will not
         // spam the logcat with this.
+        // 这通常意味着深度数据尚不可用。这是正常的，所以我们不会向 logcat 发送垃圾邮件。
       }
     }
-
-    // Handle one tap per frame.
+    // Handle one tap per frame.每帧处理一次屏幕点击。
     handleTap(frame, camera)
-
     // Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
+    // 在跟踪时保持屏幕解锁，但在跟踪停止时让它锁定。
     trackingStateHelper.updateKeepScreenOnFlag(camera.trackingState)
-
     // Show a message based on whether tracking has failed, if planes are detected, and if the user
     // has placed any objects.
+    // 根据跟踪是否失败、是否检测到平面以及用户是否放置了任何对象，来显示消息。
     val message: String? =
       when {
         camera.trackingState == TrackingState.PAUSED &&
@@ -335,27 +337,26 @@ class HelloArRenderer(val activity: HelloArActivity) :
     if (message == null) {
       activity.view.snackbarHelper.hide(activity)
     } else {
-      activity.view.snackbarHelper.showMessage(activity, message)
+      showMessage(message)
     }
-
-    // -- Draw background
+    // -- 绘制背景Draw background
     if (frame.timestamp != 0L) {
       // Suppress rendering if the camera did not produce the first frame yet. This is to avoid
       // drawing possible leftover data from previous sessions if the texture is reused.
+      // 如果相机尚未生成第一帧，则禁止渲染。这是为了避免在重复使用纹理时从以前的会话中绘制可能的剩余数据。
       backgroundRenderer.drawBackground(render)
     }
-
-    // If not tracking, don't draw 3D objects.
+    // If not tracking, don't draw 3D objects. 如果没有在跟踪，则不要绘制 3D 对象。
     if (camera.trackingState == TrackingState.PAUSED) {
       return
     }
-
     // -- Draw non-occluded virtual objects (planes, point cloud)
+    // 绘制非遮挡的虚拟对象（平面、点云）
 
-    // Get projection matrix.
+    // Get projection matrix. 获取投影矩阵。
     camera.getProjectionMatrix(projectionMatrix, 0, Z_NEAR, Z_FAR)
 
-    // Get camera matrix and draw.
+    // Get camera matrix and draw. 获取相机矩阵并绘制。
     camera.getViewMatrix(viewMatrix, 0)
     frame.acquirePointCloud().use { pointCloud ->
       if (pointCloud.timestamp > lastPointCloudTimestamp) {
@@ -366,7 +367,6 @@ class HelloArRenderer(val activity: HelloArActivity) :
       pointCloudShader.setMat4("u_ModelViewProjection", modelViewProjectionMatrix)
       render.draw(pointCloudMesh, pointCloudShader)
     }
-
     // Visualize planes.
     planeRenderer.drawPlanes(
       render,
@@ -522,13 +522,17 @@ class HelloArRenderer(val activity: HelloArActivity) :
     }
   }
 
-  private fun showError(errorMessage: String) =
+  private fun showMessageError(errorMessage: String) =
     activity.view.snackbarHelper.showError(activity, errorMessage)
+  private fun showMessage(Message: String) =
+    activity.view.snackbarHelper.showMessage(activity, Message)
 }
+
 
 /**
  * Associates an Anchor with the trackable it was attached to. This is used to be able to check
  * whether or not an Anchor originally was attached to an {@link InstantPlacementPoint}.
+ * 将 Anchor 与它所附加的 trackable 相关联。这用于检查 Anchor 是否最初附加到 {@link InstantPlacementPoint}。
  */
 private data class WrappedAnchor(
   val anchor: Anchor,

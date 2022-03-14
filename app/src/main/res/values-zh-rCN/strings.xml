@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AR室内定位</string>
+    <string name="record">开始录制</string>
+    <string name="stop">停止</string>
+    <string name="app_name">室外坐标引入室内</string>
+    <string name="button_text_enable_depth">打开</string>
+    <string name="button_text_disable_depth">关闭</string>
+    <string name="options_title_with_depth">该设备支持深度视觉</string>
+    <string name="options_title_without_depth">该设备不支持深度视觉</string>
+    <string name="done">已完成</string>
+    <string name="options_title_instant_placement">即时放置选项</string>
+    <string name="searching_planes">正在寻找环境内平面</string>
+    <string name="waiting_taps">在屏幕上点击以放置物体</string>
+    <string name="playback">使用视频</string>
 </resources>
