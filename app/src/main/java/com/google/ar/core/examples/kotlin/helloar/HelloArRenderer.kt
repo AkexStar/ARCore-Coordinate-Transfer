@@ -379,7 +379,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
 //      activity.textView.text = str[0] + "\n" + projectionMatrix.contentToString()
 //    }else
 //      activity.textView.text = projectionMatrix.contentToString()
-    activity.textView.text = camera.pose.tx().toString() + " " + camera.pose.ty().toString() + " " + camera.pose.tz().toString()
+//    activity.textView.text = camera.pose.tx().toString() + " " + camera.pose.ty().toString() + " " + camera.pose.tz().toString()
     // -- Draw occluded virtual objects
 
     // Update lighting parameters in the shader
@@ -391,8 +391,10 @@ class HelloArRenderer(val activity: HelloArActivity) :
       wrappedAnchors.filter { it.anchor.trackingState == TrackingState.TRACKING }) {
       // Get the current pose of an Anchor in world space. The Anchor pose is updated
       // during calls to session.update() as ARCore refines its estimate of the world.
+        // 获取 Anchor 在世界空间中的当前姿势。 Anchor 姿势在调用 session.update() 期间更新，因为 ARCore 改进了它对世界的估计。
       anchor.pose.toMatrix(modelMatrix, 0)
-
+      activity.textView.text = anchor.pose.tx().toString() + " " + anchor.pose.ty().toString() + " " + anchor.pose.tz().toString()
+//      activity.textView.text = anchor.pose.
       // Calculate model/view/projection matrices
       Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
       Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
