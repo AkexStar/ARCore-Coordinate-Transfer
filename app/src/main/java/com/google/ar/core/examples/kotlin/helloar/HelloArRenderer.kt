@@ -17,6 +17,7 @@ package com.google.ar.core.examples.kotlin.helloar
 
 import android.opengl.GLES30
 import android.opengl.Matrix
+import android.os.Message
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -37,6 +38,7 @@ import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.util.logging.Handler
 
 /** Renders the HelloAR application using our example Renderer. */
 class HelloArRenderer(val activity: HelloArActivity) :
@@ -78,7 +80,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
     val CUBEMAP_RESOLUTION = 16
     val CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES = 64 //32
   }
-
+  var dataStr = ""
   lateinit var render: SampleRender
   lateinit var planeRenderer: PlaneRenderer
   lateinit var backgroundRenderer: BackgroundRenderer
@@ -142,6 +144,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
     // Prepare the rendering objects. 准备渲染对象
     // This involves reading shaders and 3D model files, so may throw an IOException.
     // 这涉及读取着色器和 3D 模型文件，因此可能会引发 IOException。
+    activity.mHandler.sendEmptyMessage(0)
     try {
       planeRenderer = PlaneRenderer(render)
       backgroundRenderer = BackgroundRenderer(render)
@@ -248,6 +251,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
     displayRotationHelper.onSurfaceChanged(width, height)
     virtualSceneFramebuffer.resize(width, height)
   }
+
 
   override fun onDrawFrame(render: SampleRender) {
     val session = session ?: return
@@ -374,11 +378,8 @@ class HelloArRenderer(val activity: HelloArActivity) :
       camera.displayOrientedPose,
       projectionMatrix
     )
-//    if (activity.textView.text !== ""){
-//      val str = activity.textView.text.split("\n")
-//      activity.textView.text = str[0] + "\n" + projectionMatrix.contentToString()
-//    }else
-//      activity.textView.text = projectionMatrix.contentToString()
+    dataStr = String.format("Camera x=%.3f y=%.3f z=%.3f\n",camera.pose.tx(), camera.pose.ty(), camera.pose.tz())
+//    activity.textView.text = str
 //    activity.textView.text = camera.pose.tx().toString() + " " + camera.pose.ty().toString() + " " + camera.pose.tz().toString()
     // -- Draw occluded virtual objects
 
@@ -393,8 +394,7 @@ class HelloArRenderer(val activity: HelloArActivity) :
       // during calls to session.update() as ARCore refines its estimate of the world.
         // 获取 Anchor 在世界空间中的当前姿势。 Anchor 姿势在调用 session.update() 期间更新，因为 ARCore 改进了它对世界的估计。
       anchor.pose.toMatrix(modelMatrix, 0)
-      activity.textView.text = anchor.pose.tx().toString() + " " + anchor.pose.ty().toString() + " " + anchor.pose.tz().toString()
-//      activity.textView.text = anchor.pose.
+      dataStr += String.format("x=%.3f y=%.3f z=%.3f\n", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
       // Calculate model/view/projection matrices
       Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
       Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
@@ -413,7 +413,12 @@ class HelloArRenderer(val activity: HelloArActivity) :
       virtualObjectShader.setTexture("u_AlbedoTexture", texture)
       render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
     }
-
+    Thread{
+      activity.mHandler.sendMessage(Message.obtain().apply {
+        what = 1
+        obj = dataStr
+      })
+    }.start()
     // Compose the virtual scene with the background.
     backgroundRenderer.drawVirtualScene(render, virtualSceneFramebuffer, Z_NEAR, Z_FAR)
   }

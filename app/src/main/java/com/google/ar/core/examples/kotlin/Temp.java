@@ -17,6 +17,7 @@ public class Temp {
     };
     private AppState appState = AppState.Idle;
 
+
 //    private void updateRecordButton() {
 //        View buttonView = findViewById(R.id.record_button);
 //        Button button = (Button) buttonView;

@@ -21,9 +21,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.util.Log
@@ -46,6 +44,7 @@ import com.google.ar.core.exceptions.*
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -64,6 +63,9 @@ class HelloArActivity : AppCompatActivity() {
     private const val MP4_VIDEO_MIME_TYPE = "video/mp4"
     private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1
     private const val REQUEST_MP4_SELECTOR = 1
+    const val TEXTVIEW_CLEAN = 0
+    const val TEXTVIEW_UPDATE = 1
+
     private val ANCHOR_TRACK_ID = UUID.fromString("53069eb5-21ef-4946-b71c-6ac4979216a6")
     private const val ANCHOR_TRACK_MIME_TYPE = "application/recording-playback-anchor"
   }
@@ -120,7 +122,18 @@ class HelloArActivity : AppCompatActivity() {
     depthSettings.onCreate(this)
     instantPlacementSettings.onCreate(this)
   }
-
+  class MyHandler(var weakReferenceActivity:WeakReference<HelloArActivity>): Handler(Looper.getMainLooper()){
+    override fun handleMessage(msg: Message) {
+      super.handleMessage(msg)
+      weakReferenceActivity.get()?.run {
+        when (msg.what){
+          TEXTVIEW_CLEAN -> textView.text =""
+          TEXTVIEW_UPDATE -> textView.text = msg.obj as String
+        }
+      }
+    }
+  }
+  val mHandler = MyHandler(WeakReference(this))//更新坐标显示的句柄
   // Configure the session, using Lighting Estimation, and Depth mode.
   // 使用光照估计和深度模式配置会话。
   fun configureSession(session: Session) {

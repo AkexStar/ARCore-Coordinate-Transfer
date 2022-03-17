@@ -25,7 +25,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * Helper to detect taps using Android GestureDetector, and pass the taps between UI thread and
- * render thread.
+ * render thread.Helper 使用 Android GestureDetector 检测点击，并在 UI 线程和渲染线程之间传递点击
  */
 public final class TapHelper implements OnTouchListener {
   private final GestureDetector gestureDetector;

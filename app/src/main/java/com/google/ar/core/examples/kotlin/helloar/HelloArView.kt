@@ -55,6 +55,7 @@ class HelloArView(val activity: HelloArActivity) : DefaultLifecycleObserver {
   val tapHelper = TapHelper(activity).also { surfaceView.setOnTouchListener(it) }
 
   override fun onResume(owner: LifecycleOwner) {
+    activity.mHandler.sendEmptyMessage(0)
     surfaceView.onResume()
   }
 

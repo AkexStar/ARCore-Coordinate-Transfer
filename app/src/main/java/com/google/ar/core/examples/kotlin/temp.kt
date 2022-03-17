@@ -1,7 +1,7 @@
 package com.google.ar.core.examples.kotlin
 
 import com.google.ar.core.*
-import com.google.ar.core.examples.java.common.samplerender.SampleRender
+
 
 
 //private fun updateRecordButton() {
