@@ -16,7 +16,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.google.ar.core.examples.kotlin.helloar">
+    package="com.google.ar.core.ARPositioning.kotlin.Transfer">
 
   <uses-permission android:name="android.permission.CAMERA"/>
   <!-- Limits app visibility in the Google Play Store to ARCore supported devices
@@ -43,7 +43,7 @@
       tools:ignore="GoogleAppIndexingWarning">
 
     <activity
-        android:name="com.google.ar.core.examples.kotlin.helloar.HelloArActivity"
+        android:name="com.google.ar.core.ARPositioning.kotlin.Transfer.MainActivity"
         android:configChanges="orientation|screenSize"
         android:exported="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"
