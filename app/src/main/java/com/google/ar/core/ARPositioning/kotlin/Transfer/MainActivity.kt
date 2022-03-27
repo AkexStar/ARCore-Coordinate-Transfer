@@ -18,6 +18,7 @@ package com.google.ar.core.ARPositioning.kotlin.Transfer
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -41,12 +42,11 @@ import com.google.ar.core.ARPositioning.java.common.helpers.InstantPlacementSett
 import com.google.ar.core.ARPositioning.java.common.samplerender.SampleRender
 import com.google.ar.core.ARPositioning.kotlin.common.helpers.ARCoreSessionLifecycleHelper
 import com.google.ar.core.exceptions.*
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.IOException
+import java.io.*
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.log
 
 
 /**
@@ -58,7 +58,6 @@ import java.util.*
  */
 class MainActivity : AppCompatActivity() {
   companion object {
-    //HelloArActivity
     private const val TAG = "HelloArActivity"
     private const val MP4_VIDEO_MIME_TYPE = "video/mp4"
     private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1
@@ -73,14 +72,17 @@ class MainActivity : AppCompatActivity() {
   lateinit var view: ArView
   lateinit var renderer: HelloArRenderer
   lateinit var textView: TextView
+  lateinit var ARDataFileName: String
 
   val instantPlacementSettings = InstantPlacementSettings()
   val depthSettings = DepthSettings()
 
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-
+    val dateFormat = SimpleDateFormat("yyyyMMdd-HHmmss").format(Date()).toString()
+    ARDataFileName = "ARData-$dateFormat.txt"
+//    ARDataFileName = "ARDataFileName"
     // Setup ARCore session lifecycle helper and configuration.
     // 设置ARCore会话的生命周期帮助程序和配置。
     arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
@@ -128,12 +130,29 @@ class MainActivity : AppCompatActivity() {
       weakReferenceActivity.get()?.run {
         when (msg.what){
           TEXTVIEW_CLEAN -> textView.text =""
-          TEXTVIEW_UPDATE -> textView.text = msg.obj as String
+          TEXTVIEW_UPDATE -> {
+            textView.text = msg.obj as String
+          }
         }
       }
     }
   }
   val mHandler = MyHandler(WeakReference(this))//更新坐标显示的句柄
+
+  fun mylogSave(inputText: String){
+    try {
+      val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
+      val output = openFileOutput(ARDataFileName, Context.MODE_APPEND)
+      val writer = BufferedWriter(OutputStreamWriter(output))
+      writer.use {
+        //TODO: 给每个位置数据加上时间 使用列表的方式 方便后期处理
+
+        it.write("$dateFormat--------------\n$inputText") }
+    } catch (e:IOException){
+      Log.e("TAG", "无法写入data", e)
+    }
+  }
+
   // Configure the session, using Lighting Estimation, and Depth mode.
   // 使用光照估计和深度模式配置会话。
   fun configureSession(session: Session) {
@@ -266,6 +285,7 @@ class MainActivity : AppCompatActivity() {
       return false
     }
     view.surfaceView.onResume()
+    mylogSave("\n------New Session------\n")
     return true
   }
 

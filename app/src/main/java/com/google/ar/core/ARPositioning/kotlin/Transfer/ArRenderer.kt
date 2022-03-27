@@ -62,6 +62,7 @@ class HelloArRenderer(val activity: MainActivity) :
 
     private val Z_NEAR = 0.1f
     private val Z_FAR = 80f //100
+    private var myTimer = 1
 
     // Assumed distance from the device camera to the surface on which user will try to place
     // objects. 从设备相机到用户将尝试放置对象的表面的假定距离。
@@ -418,6 +419,11 @@ class HelloArRenderer(val activity: MainActivity) :
         obj = dataStr
       })
     }.start()
+    myTimer += 1
+    if (myTimer == 30){
+      activity.mylogSave(dataStr)
+      myTimer = 1
+    }
     // Compose the virtual scene with the background.
     backgroundRenderer.drawVirtualScene(render, virtualSceneFramebuffer, Z_NEAR, Z_FAR)
   }
