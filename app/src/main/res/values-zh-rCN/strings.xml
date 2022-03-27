@@ -12,4 +12,6 @@
     <string name="searching_planes">正在寻找环境内平面</string>
     <string name="waiting_taps">在屏幕上点击以放置物体</string>
     <string name="playback">使用视频</string>
+    <string name="set_point">设置相机位置标记</string>
+    <string name="input_point_name">记录相机位置点名</string>
 </resources>
