@@ -28,11 +28,13 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.textfield.TextInputEditText
 import com.google.ar.core.*
 import com.google.ar.core.Config.InstantPlacementMode
 import com.google.ar.core.ARPositioning.java.common.helpers.CameraPermissionHelper
@@ -46,7 +48,6 @@ import java.io.*
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.log
 
 
 /**
@@ -72,7 +73,10 @@ class MainActivity : AppCompatActivity() {
   lateinit var view: ArView
   lateinit var renderer: HelloArRenderer
   lateinit var textView: TextView
-  lateinit var ARDataFileName: String
+  lateinit var inputPointName: EditText
+  lateinit var ARCameraDataFileName: String
+  lateinit var ARTrackableDataFileName: String
+  lateinit var ARMarkDataFileName: String
 
   val instantPlacementSettings = InstantPlacementSettings()
   val depthSettings = DepthSettings()
@@ -80,9 +84,10 @@ class MainActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val dateFormat = SimpleDateFormat("yyyyMMdd-HHmmss").format(Date()).toString()
-    ARDataFileName = "ARData-$dateFormat.txt"
-//    ARDataFileName = "ARDataFileName"
+    val dateFormat = SimpleDateFormat("MMdd-HHmmss").format(Date()).toString()
+    ARCameraDataFileName = "$dateFormat-CameraData.txt"
+    ARTrackableDataFileName = "$dateFormat-TrackableData.txt"
+    ARMarkDataFileName = "$dateFormat-MarkPointData.txt"
     // Setup ARCore session lifecycle helper and configuration.
     // 设置ARCore会话的生命周期帮助程序和配置。
     arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
@@ -117,6 +122,7 @@ class MainActivity : AppCompatActivity() {
     lifecycle.addObserver(view)
     setContentView(view.root)
     textView = findViewById<View>(R.id.textView) as TextView
+    inputPointName = findViewById<View>(R.id.MarkIDInput) as EditText
     // Sets up an example renderer using our HelloARRenderer.
     // 使用我们的 HelloARRenderer 设置示例渲染器。
     SampleRender(view.surfaceView, renderer, assets)
@@ -139,20 +145,76 @@ class MainActivity : AppCompatActivity() {
   }
   val mHandler = MyHandler(WeakReference(this))//更新坐标显示的句柄
 
-  fun mylogSave(inputText: String){
+  fun myCameraLog(inputText: String){
     try {
       val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
-      val output = openFileOutput(ARDataFileName, Context.MODE_APPEND)
+      val output = openFileOutput(ARCameraDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        //TODO: 给每个位置数据加上时间 使用列表的方式 方便后期处理
-
-        it.write("$dateFormat--------------\n$inputText") }
+        it.write("$dateFormat $inputText\n") }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
   }
-
+  fun myLogMessage(inputText: String){
+    try {
+      val output = openFileOutput(ARCameraDataFileName, Context.MODE_APPEND)
+      val writer = BufferedWriter(OutputStreamWriter(output))
+      writer.use {
+        it.write("$inputText") }
+    } catch (e:IOException){
+      Log.e("TAG", "无法写入data", e)
+    }
+    try {
+      val output = openFileOutput(ARTrackableDataFileName, Context.MODE_APPEND)
+      val writer = BufferedWriter(OutputStreamWriter(output))
+      writer.use {
+        it.write("$inputText") }
+    } catch (e:IOException){
+      Log.e("TAG", "无法写入data", e)
+    }
+    try {
+      val output = openFileOutput(ARMarkDataFileName, Context.MODE_APPEND)
+      val writer = BufferedWriter(OutputStreamWriter(output))
+      writer.use {
+        it.write("$inputText") }
+    } catch (e:IOException){
+      Log.e("TAG", "无法写入data", e)
+    }
+  }
+  fun myTrackableLog(inputText: String){
+    try {
+      val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
+      val output = openFileOutput(ARTrackableDataFileName, Context.MODE_APPEND)
+      val writer = BufferedWriter(OutputStreamWriter(output))
+      writer.use {
+        it.write("$dateFormat $inputText\n") }
+    } catch (e:IOException){
+      Log.e("TAG", "无法写入data", e)
+    }
+  }
+  fun onClickSetPoint(myview: View?) {
+    Log.d(TAG, "onClickSetPoint")
+    try {
+      val output = openFileOutput(ARMarkDataFileName, Context.MODE_APPEND)
+      val writer = BufferedWriter(OutputStreamWriter(output))
+      writer.use {
+        val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
+        //TODO 增加打点编号
+        val pointName = inputPointName.text.toString()
+        if (pointName == ""){
+          Toast.makeText(this, "请输入点名！", Toast.LENGTH_SHORT).show()
+          return
+        }
+        val value = pointName.toInt()+1
+        inputPointName.setText(value.toString())
+        it.write("$dateFormat\t"+pointName+"\t"+renderer.cameraStatus.toString()+"\n")
+      }
+      Toast.makeText(this, "已记录标记点！", Toast.LENGTH_SHORT).show()
+    } catch (e:IOException){
+      Log.e("TAG", "无法写入data", e)
+    }
+  }
   // Configure the session, using Lighting Estimation, and Depth mode.
   // 使用光照估计和深度模式配置会话。
   fun configureSession(session: Session) {
@@ -285,7 +347,7 @@ class MainActivity : AppCompatActivity() {
       return false
     }
     view.surfaceView.onResume()
-    mylogSave("\n------New Session------\n")
+    myLogMessage("------New Session------\n")
     return true
   }
 

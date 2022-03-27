@@ -57,7 +57,7 @@ class ArView(val activity: MainActivity) : DefaultLifecycleObserver {
   override fun onResume(owner: LifecycleOwner) {
     activity.mHandler.sendEmptyMessage(0)
     surfaceView.onResume()
-    activity.mylogSave("\n------New Session------\n")
+    activity.myLogMessage("------New Session------\n")
   }
 
   override fun onPause(owner: LifecycleOwner) {

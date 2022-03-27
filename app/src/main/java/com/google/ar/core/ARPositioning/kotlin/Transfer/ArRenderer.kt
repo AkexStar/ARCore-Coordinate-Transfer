@@ -75,7 +75,7 @@ class HelloArRenderer(val activity: MainActivity) :
     // to place an object on the ground or floor in front of them.
     // [0.2, 2.0] 米范围内的值是大多数 AR 体验的不错选择。对 AR 体验使用较低的值，用户需要将对象放置在靠近相机的表面上。
     // 对于用户可能站立并试图将物体放在他们面前的地面或地板上的体验，请使用较大的值。
-    val APPROXIMATE_DISTANCE_METERS = 1.0f //2
+    val APPROXIMATE_DISTANCE_METERS = 2.0f //2
 
     val CUBEMAP_RESOLUTION = 16
     val CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES = 64 //32
@@ -96,6 +96,8 @@ class HelloArRenderer(val activity: MainActivity) :
   // was not changed.  Do this using the timestamp since we can't compare PointCloud objects.
   // 跟踪最后渲染的点云，以避免在未更改点云时更新 VBO。使用时间戳执行此操作，因为我们无法比较 PointCloud 对象。
   var lastPointCloudTimestamp: Long = 0
+
+  lateinit var cameraStatus: CameraStatus
 
   // Virtual object (ARCore pawn) 虚拟物体的变量
   lateinit var virtualObjectMesh: Mesh
@@ -378,11 +380,9 @@ class HelloArRenderer(val activity: MainActivity) :
       camera.displayOrientedPose,
       projectionMatrix
     )
-    dataStr = String.format("Camera x=%.3f y=%.3f z=%.3f\n",camera.pose.tx(), camera.pose.ty(), camera.pose.tz())
-//    activity.textView.text = str
-//    activity.textView.text = camera.pose.tx().toString() + " " + camera.pose.ty().toString() + " " + camera.pose.tz().toString()
+    dataStr = String.format("Camera x=%.3f\ty=%.3f\tz=%.3f\n",camera.pose.tx(), camera.pose.ty(), camera.pose.tz())
+    cameraStatus = CameraStatus(camera.pose.tx(), camera.pose.ty(), camera.pose.tz(), camera.trackingState)
     // -- Draw occluded virtual objects
-
     // Update lighting parameters in the shader
     updateLightEstimation(frame.lightEstimate, viewMatrix)
 
@@ -394,7 +394,7 @@ class HelloArRenderer(val activity: MainActivity) :
       // during calls to session.update() as ARCore refines its estimate of the world.
         // 获取 Anchor 在世界空间中的当前姿势。 Anchor 姿势在调用 session.update() 期间更新，因为 ARCore 改进了它对世界的估计。
       anchor.pose.toMatrix(modelMatrix, 0)
-      dataStr += String.format("x=%.3f y=%.3f z=%.3f\n", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
+      dataStr += String.format("x=%.3f\ty=%.3f\tz=%.3f\n", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
       // Calculate model/view/projection matrices
       Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
       Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
@@ -420,8 +420,14 @@ class HelloArRenderer(val activity: MainActivity) :
       })
     }.start()
     myTimer += 1
-    if (myTimer == 30){
-      activity.mylogSave(dataStr)
+    if (myTimer == 30){ //每30帧记录一次数据，相当于每秒
+      activity.myCameraLog(String.format("%.4f\t%.4f\t%.4f",camera.pose.tx(), camera.pose.ty(), camera.pose.tz()))
+      for ((i, value) in wrappedAnchors.withIndex()){
+        if (value.anchor.trackingState != TrackingState.TRACKING)
+          continue
+        val str = String.format("%.3f %.3f %.3f",  value.anchor.pose.tx(),  value.anchor.pose.ty(),  value.anchor.pose.tz())
+        activity.myTrackableLog("Anchor$i\t$str")
+      }
       myTimer = 1
     }
     // Compose the virtual scene with the background.
@@ -493,6 +499,7 @@ class HelloArRenderer(val activity: MainActivity) :
   }
 
   // Handle only one tap per frame, as taps are usually low frequency compared to frame rate.
+  // 每帧只处理一次点击，因为与帧速率相比，点击的频率通常较低。
   private fun handleTap(frame: Frame, camera: Camera) {
     if (camera.trackingState != TrackingState.TRACKING) return
     val tap = activity.view.tapHelper.poll() ?: return
@@ -505,7 +512,7 @@ class HelloArRenderer(val activity: MainActivity) :
       }
 
     // Hits are sorted by depth. Consider only closest hit on a plane, Oriented Point, Depth Point,
-    // or Instant Placement Point.
+    // or Instant Placement Point.命中按深度排序。仅考虑平面、定向点、深度点或即时放置点上的最近命中。
     val firstHitResult =
       hitResultList.firstOrNull { hit ->
         when (val trackable = hit.trackable!!) {
@@ -515,6 +522,7 @@ class HelloArRenderer(val activity: MainActivity) :
           is Point -> trackable.orientationMode == Point.OrientationMode.ESTIMATED_SURFACE_NORMAL
           is InstantPlacementPoint -> true
           // DepthPoints are only returned if Config.DepthMode is set to AUTOMATIC.
+          // 仅当 Config.DepthMode 设置为 AUTOMATIC 时才返回 DepthPoints。
           is DepthPoint -> true
           else -> false
         }
@@ -522,8 +530,8 @@ class HelloArRenderer(val activity: MainActivity) :
 
     if (firstHitResult != null) {
       // Cap the number of objects created. This avoids overloading both the
-      // rendering system and ARCore.
-      if (wrappedAnchors.size >= 20) {
+      // rendering system and ARCore.限制创建的对象数量。这避免了渲染系统和 ARCore 的过载。
+      if (wrappedAnchors.size >= 25) { //一般限制为20个
         wrappedAnchors[0].anchor.detach()
         wrappedAnchors.removeAt(0)
       }
@@ -531,10 +539,11 @@ class HelloArRenderer(val activity: MainActivity) :
       // Adding an Anchor tells ARCore that it should track this position in
       // space. This anchor is created on the Plane to place the 3D model
       // in the correct position relative both to the world and to the plane.
+      // 添加一个 Anchor 告诉 ARCore 它应该在空间中跟踪这个位置。此锚点在平面上创建，以将 3D 模型放置在相对于世界和平面的正确位置。
       wrappedAnchors.add(WrappedAnchor(firstHitResult.createAnchor(), firstHitResult.trackable))
-
       // For devices that support the Depth API, shows a dialog to suggest enabling
       // depth-based occlusion. This dialog needs to be spawned on the UI thread.
+      // 对于支持深度 API 的设备，显示一个对话框，建议启用基于深度的遮挡。此对话框需要在 UI 线程上生成。
       activity.runOnUiThread { activity.view.showOcclusionDialogIfNeeded() }
     }
   }
@@ -555,3 +564,13 @@ private data class WrappedAnchor(
   val anchor: Anchor,
   val trackable: Trackable,
 )
+data class CameraStatus(
+  val x: Float,
+  val y: Float,
+  val z: Float,
+  val trackingState: TrackingState,
+){
+  override fun toString(): String {
+    return String.format("%.4f\t%.4f\t%.4f\t", x, y, z) + trackingState.toString()
+  }
+}

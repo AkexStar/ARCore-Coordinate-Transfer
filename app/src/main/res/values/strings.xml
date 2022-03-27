@@ -36,6 +36,8 @@
   <string name="record">Record</string>
   <string name="stop">Stop</string>
   <string name="playback">Playback</string>
+  <string name="set_point">SetPoint</string>
+  <string name="input_point_name">Set Camera Point Name</string>
 
 
 </resources>
