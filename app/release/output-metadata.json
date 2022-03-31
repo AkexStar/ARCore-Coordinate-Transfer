@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.Alex.ar.core.kotlin.ARPositioning",
+  "applicationId": "com.Alex.ARCore.ARPositioning",
   "variantName": "release",
   "elements": [
     {
@@ -12,8 +12,8 @@
       "filters": [],
       "attributes": [],
       "versionCode": 1,
-      "versionName": "2.1",
-      "outputFile": "ARPositioning_release_v2.1_0321_0204.apk"
+      "versionName": "2.2",
+      "outputFile": "ARPositioning_release_v2.2_0331_1537.apk"
     }
   ],
   "elementType": "File"
