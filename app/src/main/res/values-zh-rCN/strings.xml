@@ -14,4 +14,8 @@
     <string name="playback">使用视频</string>
     <string name="set_point">设置相机位置标记</string>
     <string name="input_point_name">记录相机位置点名</string>
+    <string name="title_activity_first">首页</string>
+    <string name="title_dashboard">工作台</string>
+    <string name="title_notifications">通知</string>
+    <string name="title_home">主页</string>
 </resources>
