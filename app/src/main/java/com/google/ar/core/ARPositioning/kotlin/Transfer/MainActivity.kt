@@ -16,7 +16,6 @@
 package com.google.ar.core.ARPositioning.kotlin.Transfer
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -34,7 +33,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.material.textfield.TextInputEditText
 import com.google.ar.core.*
 import com.google.ar.core.Config.InstantPlacementMode
 import com.google.ar.core.ARPositioning.java.common.helpers.CameraPermissionHelper
@@ -47,6 +45,7 @@ import com.google.ar.core.exceptions.*
 import java.io.*
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
 
 
@@ -65,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     private const val REQUEST_MP4_SELECTOR = 1
     const val TEXTVIEW_CLEAN = 0
     const val TEXTVIEW_UPDATE = 1
+    const val FILE_TIME_PATTERN = "MMdd-HHmmss"
 
     private val ANCHOR_TRACK_ID = UUID.fromString("53069eb5-21ef-4946-b71c-6ac4979216a6")
     private const val ANCHOR_TRACK_MIME_TYPE = "application/recording-playback-anchor"
@@ -73,10 +73,10 @@ class MainActivity : AppCompatActivity() {
   lateinit var view: ArView
   lateinit var renderer: HelloArRenderer
   lateinit var textView: TextView
-  lateinit var inputPointName: EditText
-  lateinit var ARCameraDataFileName: String
-  lateinit var ARTrackableDataFileName: String
-  lateinit var ARMarkDataFileName: String
+  private lateinit var inputPointName: EditText
+  private lateinit var cameraDataFileName: String
+  private lateinit var anchorDataFileName: String
+  lateinit var markPointDataFileName: String
 
   val instantPlacementSettings = InstantPlacementSettings()
   val depthSettings = DepthSettings()
@@ -84,10 +84,10 @@ class MainActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val dateFormat = SimpleDateFormat("MMdd-HHmmss").format(Date()).toString()
-    ARCameraDataFileName = "$dateFormat-CameraData.txt"
-    ARTrackableDataFileName = "$dateFormat-TrackableData.txt"
-    ARMarkDataFileName = "$dateFormat-MarkPointData.txt"
+    val dateFormat = SimpleDateFormat(FILE_TIME_PATTERN, Locale.PRC).format(Date()).toString()
+    cameraDataFileName = "$dateFormat-CameraData.txt"
+    anchorDataFileName = "$dateFormat-TrackableData.txt"
+    markPointDataFileName = "$dateFormat-MarkPointData.txt"
     // Setup ARCore session lifecycle helper and configuration.
     // 设置ARCore会话的生命周期帮助程序和配置。
     arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)
@@ -147,60 +147,61 @@ class MainActivity : AppCompatActivity() {
 
   fun myCameraLog(inputText: String){
     try {
-      val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
-      val output = openFileOutput(ARCameraDataFileName, Context.MODE_APPEND)
+//      val dateFormat = SimpleDateFormat(TIMEPATTERN).format(Date()).toString()
+      val time = LocalDateTime.now()
+      val output = openFileOutput(cameraDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$dateFormat $inputText\n") }
+        it.write("$time $inputText\n") }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
   }
   fun myLogMessage(inputText: String){
     try {
-      val output = openFileOutput(ARCameraDataFileName, Context.MODE_APPEND)
+      val output = openFileOutput(cameraDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$inputText") }
+        it.write(inputText) }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
     try {
-      val output = openFileOutput(ARTrackableDataFileName, Context.MODE_APPEND)
+      val output = openFileOutput(anchorDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$inputText") }
+        it.write(inputText) }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
     try {
-      val output = openFileOutput(ARMarkDataFileName, Context.MODE_APPEND)
+      val output = openFileOutput(markPointDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$inputText") }
+        it.write(inputText) }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
   }
   fun myTrackableLog(inputText: String){
     try {
-      val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
-      val output = openFileOutput(ARTrackableDataFileName, Context.MODE_APPEND)
+//      val dateFormat = SimpleDateFormat(TIMEPATTERN).format(Date()).toString()
+      val time = LocalDateTime.now()
+      val output = openFileOutput(anchorDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$dateFormat $inputText\n") }
+        it.write("$time $inputText\n") }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
   }
-  fun onClickSetPoint(myview: View?) {
+  fun onClickSetPoint(view: View?) {
     Log.d(TAG, "onClickSetPoint")
     try {
-      val output = openFileOutput(ARMarkDataFileName, Context.MODE_APPEND)
+      val output = openFileOutput(markPointDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        val dateFormat = SimpleDateFormat("yyyy/MM/dd-HHmmss").format(Date()).toString()
-        //TODO 增加打点编号
+        val dateFormat = SimpleDateFormat(FILE_TIME_PATTERN, Locale.PRC).format(Date()).toString()
         val pointName = inputPointName.text.toString()
         if (pointName == ""){
           Toast.makeText(this, "请输入点名！", Toast.LENGTH_SHORT).show()
@@ -215,6 +216,7 @@ class MainActivity : AppCompatActivity() {
       Log.e("TAG", "无法写入data", e)
     }
   }
+
   // Configure the session, using Lighting Estimation, and Depth mode.
   // 使用光照估计和深度模式配置会话。
   fun configureSession(session: Session) {
@@ -237,6 +239,7 @@ class MainActivity : AppCompatActivity() {
           } else {
             InstantPlacementMode.DISABLED
           }
+
       }
     )
   }
@@ -262,7 +265,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   // 检查是否有文件写入权限
-  fun checkAndRequestStoragePermission(): Boolean {
+  private fun checkAndRequestStoragePermission(): Boolean {
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
       != PackageManager.PERMISSION_GRANTED
     ) {
@@ -289,7 +292,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   // 实例化当前状态为休眠
-  public var appState = AppState.Idle
+  var appState = AppState.Idle
 
   // 更新记录按钮
   private fun updateRecordButton() {
@@ -382,6 +385,7 @@ class MainActivity : AppCompatActivity() {
       String.format("startRecording - recordingStatus %s", recordingStatus)
     )
     textView.text = "录制状态：$recordingStatus"
+    //Do not concatenate text displayed with setText. Use resource string with placeholders.
     return recordingStatus == RecordingStatus.OK
   }
 
@@ -399,7 +403,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   // 点击录制按键
-  fun onClickRecord(view: View?) {
+  fun onClickRecord(view: View) {
     Log.d(TAG, "onClickRecord")
     when (appState) {
       AppState.Idle -> {
@@ -480,7 +484,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   // 停止回放
-  public fun stopPlayingback(): Boolean {
+  fun stopPlayback(): Boolean {
     // Correctness check, only stop playing back when the app is playing back.
     if (appState !== AppState.Playingback) return false
     pauseARCoreSession()
@@ -531,7 +535,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   // 点击回放按键
-  fun onClickPlayback(view: View?) {
+  fun onClickPlayback(view: View) {
     Log.d(TAG, "onClickPlayback")
     when (appState) {
       AppState.Idle -> {
@@ -539,7 +543,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, String.format("onClickPlayback start: selectFileToPlayback %b", hasStarted))
       }
       AppState.Playingback -> {
-        val hasStopped: Boolean = stopPlayingback()
+        val hasStopped: Boolean = stopPlayback()
         Log.d(TAG, String.format("onClickPlayback stop: hasStopped %b", hasStopped))
         textView.text=""
       }
@@ -551,7 +555,6 @@ class MainActivity : AppCompatActivity() {
   }
 
   //创建MP4文件名
-  @SuppressLint("SimpleDateFormat")
   private fun createMp4File(): Uri? {
     // Since we use legacy external storage for Android 10,
     // we still need to request for storage permission on Android 10.
@@ -559,15 +562,14 @@ class MainActivity : AppCompatActivity() {
       if (!checkAndRequestStoragePermission()) {
         Log.i(TAG, String.format(
           "Didn't createMp4File. No storage permission, API Level = %d",
-          Build.VERSION.SDK_INT));
-        return null;
+          Build.VERSION.SDK_INT))
+        return null
       }
     }
-    val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss")
+    val dateFormat = SimpleDateFormat(FILE_TIME_PATTERN, Locale.PRC)
     val mp4FileName = "arcore-" + dateFormat.format(Date()).toString() + ".mp4"
     val resolver = this.contentResolver
-    var videoCollection: Uri? = null
-    videoCollection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    val videoCollection: Uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       MediaStore.Video.Media.getContentUri(
         MediaStore.VOLUME_EXTERNAL_PRIMARY
       )
@@ -604,7 +606,7 @@ class MainActivity : AppCompatActivity() {
   // 测试内容 Uri 表示的文件是否可以通过写访问权限打开
   private fun testFileWriteAccess(contentUri: Uri): Boolean {
     try {
-      this.contentResolver.openOutputStream(contentUri).use { mp4File ->
+      this.contentResolver.openOutputStream(contentUri).use {
         Log.d(TAG, String.format("Success in testFileWriteAccess %s", contentUri.toString()))
         return true
       }

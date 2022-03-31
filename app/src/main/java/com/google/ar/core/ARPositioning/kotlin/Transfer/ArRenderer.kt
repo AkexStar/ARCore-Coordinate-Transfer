@@ -285,7 +285,7 @@ class HelloArRenderer(val activity: MainActivity) :
       }
     if (activity.appState == MainActivity.AppState.Playingback && // 停止播放就不再更新Frame
             activity.arCoreSessionHelper.session?.playbackStatus == PlaybackStatus.FINISHED){
-              activity.runOnUiThread{activity.stopPlayingback()}
+              activity.runOnUiThread{activity.stopPlayback()}
               return
     }
     val camera = frame.camera
@@ -380,8 +380,8 @@ class HelloArRenderer(val activity: MainActivity) :
       camera.displayOrientedPose,
       projectionMatrix
     )
-    dataStr = String.format("Camera x=%.3f\ty=%.3f\tz=%.3f\n",camera.pose.tx(), camera.pose.ty(), camera.pose.tz())
     cameraStatus = CameraStatus(camera.pose.tx(), camera.pose.ty(), camera.pose.tz(), camera.trackingState)
+    dataStr = "Camera $cameraStatus"
     // -- Draw occluded virtual objects
     // Update lighting parameters in the shader
     updateLightEstimation(frame.lightEstimate, viewMatrix)
@@ -394,7 +394,7 @@ class HelloArRenderer(val activity: MainActivity) :
       // during calls to session.update() as ARCore refines its estimate of the world.
         // 获取 Anchor 在世界空间中的当前姿势。 Anchor 姿势在调用 session.update() 期间更新，因为 ARCore 改进了它对世界的估计。
       anchor.pose.toMatrix(modelMatrix, 0)
-      dataStr += String.format("x=%.3f\ty=%.3f\tz=%.3f\n", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
+      dataStr += String.format("\nx=%.3f\ty=%.3f\tz=%.3f", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
       // Calculate model/view/projection matrices
       Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
       Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
@@ -420,8 +420,8 @@ class HelloArRenderer(val activity: MainActivity) :
       })
     }.start()
     myTimer += 1
-    if (myTimer == 30){ //每30帧记录一次数据，相当于每秒
-      activity.myCameraLog(String.format("%.4f\t%.4f\t%.4f",camera.pose.tx(), camera.pose.ty(), camera.pose.tz()))
+    if (myTimer == 10){ //每30帧记录一次数据，相当于每秒
+      activity.myCameraLog(cameraStatus.toString())
       for ((i, value) in wrappedAnchors.withIndex()){
         if (value.anchor.trackingState != TrackingState.TRACKING)
           continue
@@ -571,6 +571,6 @@ data class CameraStatus(
   val trackingState: TrackingState,
 ){
   override fun toString(): String {
-    return String.format("%.4f\t%.4f\t%.4f\t", x, y, z) + trackingState.toString()
+    return String.format("%.3f\t%.3f\t%.3f\t", x, y, z) + trackingState.toString()
   }
 }
