@@ -115,6 +115,7 @@ public class BackgroundRenderer {
   /**
    * Sets whether the background camera image should be replaced with a depth visualization instead.
    * This reloads the corresponding shader code, and must be called on the GL thread.
+   * 设置是否应将背景相机图像替换为深度可视化。这会重新加载相应的着色器代码，并且必须在 GL 线程上调用。
    */
   public void setUseDepthVisualization(SampleRender render, boolean useDepthVisualization)
       throws IOException {

@@ -29,6 +29,7 @@ public class DepthSettings {
   // Current depth-based settings used by the app.
   private boolean depthColorVisualizationEnabled = false;
   private boolean useDepthForOcclusion = false;
+  private boolean useDepthMap = false;
   private SharedPreferences sharedPreferences;
 
   /** Initializes the current settings based on when the app was last used.
@@ -65,6 +66,14 @@ public class DepthSettings {
 
   public void setDepthColorVisualizationEnabled(boolean depthColorVisualizationEnabled) {
     this.depthColorVisualizationEnabled = depthColorVisualizationEnabled;
+  }
+
+  public boolean useDepthMap(){
+    return useDepthMap;
+  }
+
+  public void setUseDepthMap(boolean useDepthMap){
+    this.useDepthMap = useDepthMap;
   }
 
   /** Determines if the initial prompt to use depth-based occlusion should be shown.

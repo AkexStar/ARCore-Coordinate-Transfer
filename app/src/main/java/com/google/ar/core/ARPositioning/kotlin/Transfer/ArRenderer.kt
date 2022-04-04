@@ -24,13 +24,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.*
 import com.google.ar.core.ARPositioning.java.common.helpers.DisplayRotationHelper
 import com.google.ar.core.ARPositioning.java.common.helpers.TrackingStateHelper
-import com.google.ar.core.ARPositioning.java.common.samplerender.Framebuffer
-import com.google.ar.core.ARPositioning.java.common.samplerender.GLError
-import com.google.ar.core.ARPositioning.java.common.samplerender.Mesh
-import com.google.ar.core.ARPositioning.java.common.samplerender.SampleRender
-import com.google.ar.core.ARPositioning.java.common.samplerender.Shader
-import com.google.ar.core.ARPositioning.java.common.samplerender.Texture
-import com.google.ar.core.ARPositioning.java.common.samplerender.VertexBuffer
+import com.google.ar.core.ARPositioning.java.common.samplerender.*
 import com.google.ar.core.ARPositioning.java.common.samplerender.arcore.BackgroundRenderer
 import com.google.ar.core.ARPositioning.java.common.samplerender.arcore.PlaneRenderer
 import com.google.ar.core.ARPositioning.java.common.samplerender.arcore.SpecularCubemapFilter
@@ -38,6 +32,7 @@ import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import java.io.IOException
 import java.nio.ByteBuffer
+
 
 /** Renders the HelloAR application using our example Renderer. */
 class HelloArRenderer(val activity: MainActivity) :
@@ -151,7 +146,6 @@ class HelloArRenderer(val activity: MainActivity) :
       planeRenderer = PlaneRenderer(render)
       backgroundRenderer = BackgroundRenderer(render)
       virtualSceneFramebuffer = Framebuffer(render, /*width=*/ 1, /*height=*/ 1)
-
       cubemapFilter =
         SpecularCubemapFilter(render, CUBEMAP_RESOLUTION, CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES)
       // Load environmental lighting values lookup table 加载环境照明值查找表
@@ -291,6 +285,11 @@ class HelloArRenderer(val activity: MainActivity) :
     val camera = frame.camera
     // Update BackgroundRenderer state to match the depth settings.
     // 更新 BackgroundRenderer 状态以匹配深度设置。
+//    if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)
+//      && activity.depthSettings.useDepthMap()
+//      && activity.depthSettings.depthColorVisualizationEnabled()){
+//
+//    }
     try {
       backgroundRenderer.setUseDepthVisualization(
         render,
@@ -306,6 +305,7 @@ class HelloArRenderer(val activity: MainActivity) :
     // used to draw the background camera image.
     // 必须每帧调用 BackgroundRenderer.updateDisplayGeometry 以更新用于绘制背景摄像机图像的坐标。
     backgroundRenderer.updateDisplayGeometry(frame)
+
     val shouldGetDepthImage =
       activity.depthSettings.useDepthForOcclusion() ||
         activity.depthSettings.depthColorVisualizationEnabled()
@@ -438,7 +438,8 @@ class HelloArRenderer(val activity: MainActivity) :
   private fun Session.hasTrackingPlane() =
     getAllTrackables(Plane::class.java).any { it.trackingState == TrackingState.TRACKING }
 
-  /** Update state based on the current frame's light estimation. */
+  /** Update state based on the current frame's light estimation.
+   * 根据当前帧的光照估计更新状态。*/
   private fun updateLightEstimation(lightEstimate: LightEstimate, viewMatrix: FloatArray) {
     if (lightEstimate.state != LightEstimate.State.VALID) {
       virtualObjectShader.setBool("u_LightEstimateIsValid", false)
@@ -564,6 +565,7 @@ private data class WrappedAnchor(
   val anchor: Anchor,
   val trackable: Trackable,
 )
+
 data class CameraStatus(
   val x: Float,
   val y: Float,

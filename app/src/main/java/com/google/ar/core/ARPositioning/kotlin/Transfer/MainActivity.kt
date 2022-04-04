@@ -84,10 +84,11 @@ class MainActivity : AppCompatActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    val dateFormat = SimpleDateFormat(FILE_TIME_PATTERN, Locale.PRC).format(Date()).toString()
-    cameraDataFileName = "$dateFormat-CameraData.txt"
-    anchorDataFileName = "$dateFormat-TrackableData.txt"
-    markPointDataFileName = "$dateFormat-MarkPointData.txt"
+
+    val projectName = getSharedPreferences("PROJECT_NAME",Context.MODE_PRIVATE).getString("name","")
+    cameraDataFileName = "$projectName-CamData.txt"
+    anchorDataFileName = "$projectName-TraData.txt"
+    markPointDataFileName = "$projectName-MPData.txt"
     // Setup ARCore session lifecycle helper and configuration.
     // 设置ARCore会话的生命周期帮助程序和配置。
     arCoreSessionHelper = ARCoreSessionLifecycleHelper(this)

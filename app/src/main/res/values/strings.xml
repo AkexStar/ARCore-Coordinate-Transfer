@@ -7,12 +7,13 @@
   <string name="options_title_with_depth">Your device supports depth</string>
   <string name="options_title_without_depth">Your device does not support depth</string>
   <string name="done">Done</string>
-  <string-array name="depth_options_array" translatable="false">
+  <string-array name="depth_options_array" translatable="true">
     <item>Enable depth</item>
     <item>Show depth map</item>
+    <item>Show depth blend</item>
   </string-array>
   <string name="options_title_instant_placement">Instant Placement options</string>
-  <string-array name="instant_placement_options_array" translatable="false">
+  <string-array name="instant_placement_options_array" translatable="true">
     <item>Enable Instant Placement</item>
   </string-array>
 
@@ -27,6 +28,9 @@
   <string name="title_home">Home</string>
   <string name="title_dashboard">Dashboard</string>
   <string name="title_notifications">Notifications</string>
+    <string name="project_name_lable">Projec tName</string>
+  <string name="depth_api">Depth API</string>
+  <string name="instant_placement">Instant Placement</string>
 
 
 </resources>

@@ -3,6 +3,7 @@ package com.google.ar.core.ARPositioning.kotlin.Transfer
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.ActionBar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -31,10 +32,17 @@ class FirstActivity : AppCompatActivity() {
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
+        // This example uses decor view, but you can use any visible view.
+        // Hide the status bar.
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN
+        // Remember that you should never show the action bar if the
+        // status bar is hidden, so hide that too if necessary.
+        actionBar?.hide()
+
         navView.setupWithNavController(navController)
     }
-    fun onClickNewAR(view: View){
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-    }
+//    fun onClickNewAR(view: View){
+//        val intent = Intent(this, MainActivity::class.java)
+//        startActivity(intent)
+//    }
 }

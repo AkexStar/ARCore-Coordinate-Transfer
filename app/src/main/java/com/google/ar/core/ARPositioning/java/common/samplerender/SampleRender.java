@@ -32,7 +32,7 @@ public class SampleRender {
 
   /**
    * Constructs a SampleRender object and instantiates GLSurfaceView parameters.
-   *
+   * 构造一个 SampleRender 对象并实例化 GLSurfaceView 参数。
    * @param glSurfaceView Android GLSurfaceView
    * @param renderer Renderer implementation to receive callbacks
    * @param assetManager AssetManager for loading Android resources
