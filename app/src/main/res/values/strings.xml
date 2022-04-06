@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">ARPositioning</string>
-  <string name="depth_use_explanation" translatable="false">When Depth is enabled on supported devices, virtual objects adapt to the environment by blending in with the real world.</string>
-  <string name="button_text_enable_depth">Enable</string>
-  <string name="button_text_disable_depth">Disable</string>
-  <string name="options_title_with_depth">Your device supports depth</string>
-  <string name="options_title_without_depth">Your device does not support depth</string>
-  <string name="done">Done</string>
-  <string-array name="depth_options_array" translatable="true">
-    <item>Enable depth</item>
-    <item>Show depth map</item>
-    <item>Show depth blend</item>
-  </string-array>
-  <string name="options_title_instant_placement">Instant Placement options</string>
-  <string-array name="instant_placement_options_array" translatable="true">
-    <item>Enable Instant Placement</item>
-  </string-array>
+    <string name="app_name">ARPositioning</string>
+    <string name="depth_use_explanation" translatable="false">When Depth is enabled on supported devices, virtual objects adapt to the environment by blending in with the real world.</string>
+    <string name="button_text_enable_depth">Enable</string>
+    <string name="button_text_disable_depth">Disable</string>
+    <string name="options_title_with_depth">Your device supports depth</string>
+    <string name="options_title_without_depth">Your device does not support depth</string>
+    <string name="done">Done</string>
+    <string-array name="depth_options_array" translatable="true">
+        <item>Enable depth</item>
+        <item>Show depth map</item>
+        <item>Show depth blend</item>
+    </string-array>
+    <string name="options_title_instant_placement">Instant Placement options</string>
+    <string-array name="instant_placement_options_array" translatable="true">
+        <item>Enable Instant Placement</item>
+    </string-array>
 
-  <string name="searching_planes">Searching for surfaces...</string>
-  <string name="waiting_taps">Tap on a surface to place an object.</string>
-  <string name="record">Record</string>
-  <string name="stop">Stop</string>
-  <string name="playback">Playback</string>
-  <string name="set_point">SetPoint</string>
-  <string name="input_point_name">Set Camera Point Name</string>
-  <string name="title_activity_first">FirstActivity</string>
-  <string name="title_home">Home</string>
-  <string name="title_dashboard">Dashboard</string>
-  <string name="title_notifications">Notifications</string>
+    <string name="searching_planes">Searching for surfaces...</string>
+    <string name="waiting_taps">Tap on a surface to place an object.</string>
+    <string name="record">Record</string>
+    <string name="stop">Stop</string>
+    <string name="playback">Playback</string>
+    <string name="set_point">SetPoint</string>
+    <string name="input_point_name">Set Camera Point Name</string>
+    <string name="title_activity_first">FirstActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
     <string name="project_name_lable">Projec tName</string>
-  <string name="depth_api">Depth API</string>
-  <string name="instant_placement">Instant Placement</string>
+    <string name="depth_api">Depth API</string>
+    <string name="instant_placement">Instant Placement</string>
 
 
 </resources>

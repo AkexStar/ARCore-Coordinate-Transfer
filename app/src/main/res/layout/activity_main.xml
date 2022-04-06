@@ -16,6 +16,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://scshemas.android.com/tools"
+    xmlns:tools2="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.google.ar.core.ARPositioning.kotlin.Transfer.MainActivity">
@@ -38,6 +39,7 @@
       android:layout_marginBottom="25dp"
       android:background="@android:color/transparent"
       android:src="@drawable/ic_settings"
+      tools2:ignore="SpeakableTextPresentCheck"
       tools:ignore="SpeakableTextPresentCheck" />
 
   <Button
@@ -114,14 +116,14 @@
         android:layout_width="127dp"
         android:layout_height="48dp"
         android:layout_marginBottom="8dp"
-        android:editable="true"
         android:hint="@string/input_point_name"
         android:inputType="number"
         android:textSize="12sp"
         android:selectAllOnFocus="true"
         app:layout_constraintBottom_toTopOf="@+id/trackCamera"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:autofillHints="相机位置点名" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val projectName = getSharedPreferences("PROJECT_NAME",Context.MODE_PRIVATE).getString("name","")
+    val projectName = getSharedPreferences("PROJECT",Context.MODE_PRIVATE).getString("name","Default")
     cameraDataFileName = "$projectName-CamData.txt"
     anchorDataFileName = "$projectName-TraData.txt"
     markPointDataFileName = "$projectName-MPData.txt"
@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity() {
       val output = openFileOutput(cameraDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$time $inputText\n") }
+        it.write("$time\t$inputText\n") }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }
@@ -191,7 +191,7 @@ class MainActivity : AppCompatActivity() {
       val output = openFileOutput(anchorDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write("$time $inputText\n") }
+        it.write("$time\t$inputText\n") }
     } catch (e:IOException){
       Log.e("TAG", "无法写入data", e)
     }

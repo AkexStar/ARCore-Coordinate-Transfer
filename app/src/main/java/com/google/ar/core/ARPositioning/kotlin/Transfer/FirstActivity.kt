@@ -1,16 +1,17 @@
 package com.google.ar.core.ARPositioning.kotlin.Transfer
 
-import android.content.Intent
+import android.content.Context
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.ActionBar
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.ar.core.ARPositioning.kotlin.Transfer.databinding.ActivityFirstBinding
+import java.io.File
 
 class FirstActivity : AppCompatActivity() {
 
@@ -41,8 +42,16 @@ class FirstActivity : AppCompatActivity() {
 
         navView.setupWithNavController(navController)
     }
-//    fun onClickNewAR(view: View){
-//        val intent = Intent(this, MainActivity::class.java)
-//        startActivity(intent)
-//    }
+
+    override fun onDestroy() {
+        val pref_xml = File("data/data/com.Alex.ARCore.ARPositioning/shared_prefs", "PROJECT.xml")
+        if (pref_xml.exists()) {
+            pref_xml.delete()
+        }
+        getSharedPreferences("PROJECT", Context.MODE_PRIVATE)?.edit{
+            clear()
+            commit()
+        }
+        super.onDestroy()
+    }
 }
