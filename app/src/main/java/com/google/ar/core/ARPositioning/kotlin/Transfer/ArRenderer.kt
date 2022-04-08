@@ -19,6 +19,7 @@ import android.opengl.GLES30
 import android.opengl.Matrix
 import android.os.Message
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.*
@@ -285,11 +286,6 @@ class HelloArRenderer(val activity: MainActivity) :
     val camera = frame.camera
     // Update BackgroundRenderer state to match the depth settings.
     // 更新 BackgroundRenderer 状态以匹配深度设置。
-//    if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)
-//      && activity.depthSettings.useDepthMap()
-//      && activity.depthSettings.depthColorVisualizationEnabled()){
-//
-//    }
     try {
       backgroundRenderer.setUseDepthVisualization(
         render,
@@ -413,6 +409,34 @@ class HelloArRenderer(val activity: MainActivity) :
       virtualObjectShader.setTexture("u_AlbedoTexture", texture)
       render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
     }
+
+    val updatedAugmentedImages = frame.getUpdatedTrackables(AugmentedImage::class.java)
+//    Log.d(TAG,updatedAugmentedImages.size.toString())
+    for (img in updatedAugmentedImages) {
+      if (img.trackingState == TrackingState.TRACKING) {
+        // Use getTrackingMethod() to determine whether the image is currently
+        // being tracked by the camera.
+        img.centerPose.toMatrix(modelMatrix, 0)
+        Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
+        // Update shader properties and draw
+        virtualObjectShader.setMat4("u_ModelView", modelViewMatrix)
+        virtualObjectShader.setMat4("u_ModelViewProjection", modelViewProjectionMatrix)
+        val texture = virtualObjectAlbedoTexture
+        virtualObjectShader.setTexture("u_AlbedoTexture", texture)
+        render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
+        Log.d(TAG, img.name+String.format(" %.3f\t%.3f\t%.3f\t", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz()))
+//        when (img.index) {
+//          0 -> Toast.makeText(activity, img.name+" "+img.centerPose.tx()+" "+img.centerPose.ty(), Toast.LENGTH_SHORT).show()
+//          1 -> Toast.makeText(activity, img.name+" "+img.centerPose.tx()+" "+img.centerPose.ty(), Toast.LENGTH_SHORT).show()
+//          2 -> {
+//            wrappedAnchors.add(WrappedAnchor(img.createAnchor(img.centerPose), img))
+//          }
+//          else -> Toast.makeText(activity, img.name+" "+img.centerPose.tx()+" "+img.centerPose.ty(), Toast.LENGTH_SHORT).show()
+//        }
+      }
+    }
+
     Thread{
       activity.mHandler.sendMessage(Message.obtain().apply {
         what = 1
@@ -420,7 +444,7 @@ class HelloArRenderer(val activity: MainActivity) :
       })
     }.start()
     myTimer += 1
-    if (myTimer == 10){ //每30帧记录一次数据，相当于每秒
+    if (myTimer == 15){ //每30帧记录一次数据，相当于每秒
       activity.myCameraLog(cameraStatus.toString())
       for ((i, value) in wrappedAnchors.withIndex()){
         if (value.anchor.trackingState != TrackingState.TRACKING)

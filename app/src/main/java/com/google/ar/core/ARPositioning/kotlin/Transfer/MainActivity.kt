@@ -20,6 +20,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.*
 import android.provider.DocumentsContract
@@ -34,13 +35,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.ar.core.*
-import com.google.ar.core.Config.InstantPlacementMode
 import com.google.ar.core.ARPositioning.java.common.helpers.CameraPermissionHelper
 import com.google.ar.core.ARPositioning.java.common.helpers.DepthSettings
 import com.google.ar.core.ARPositioning.java.common.helpers.FullScreenHelper
 import com.google.ar.core.ARPositioning.java.common.helpers.InstantPlacementSettings
 import com.google.ar.core.ARPositioning.java.common.samplerender.SampleRender
 import com.google.ar.core.ARPositioning.kotlin.common.helpers.ARCoreSessionLifecycleHelper
+import com.google.ar.core.Config.InstantPlacementMode
 import com.google.ar.core.exceptions.*
 import java.io.*
 import java.lang.ref.WeakReference
@@ -81,6 +82,8 @@ class MainActivity : AppCompatActivity() {
   val instantPlacementSettings = InstantPlacementSettings()
   val depthSettings = DepthSettings()
 
+  lateinit var imageDatabase: AugmentedImageDatabase
+
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -109,6 +112,8 @@ class MainActivity : AppCompatActivity() {
         Log.e(TAG, "ARCore threw an exception", exception)
         view.snackbarHelper.showError(this, message)
       }
+    // 截止此时session还未建立
+
     // Configure session features, including: Lighting Estimation, Depth mode, Instant Placement.
     // 配置会话功能，包括：灯光估计、深度模式、即时放置。
     arCoreSessionHelper.beforeSessionResume = ::configureSession
@@ -130,6 +135,7 @@ class MainActivity : AppCompatActivity() {
     // 渲染深度设置与即时放置按钮
     depthSettings.onCreate(this)
     instantPlacementSettings.onCreate(this)
+    // 截止此时session仍然为null
   }
   class MyHandler(var weakReferenceActivity:WeakReference<MainActivity>): Handler(Looper.getMainLooper()){
     override fun handleMessage(msg: Message) {
@@ -137,9 +143,7 @@ class MainActivity : AppCompatActivity() {
       weakReferenceActivity.get()?.run {
         when (msg.what){
           TEXTVIEW_CLEAN -> textView.text =""
-          TEXTVIEW_UPDATE -> {
-            textView.text = msg.obj as String
-          }
+          TEXTVIEW_UPDATE -> { textView.text = msg.obj as String }
         }
       }
     }
@@ -155,7 +159,7 @@ class MainActivity : AppCompatActivity() {
       writer.use {
         it.write("$time\t$inputText\n") }
     } catch (e:IOException){
-      Log.e("TAG", "无法写入data", e)
+      Log.e(TAG, "无法写入data", e)
     }
   }
   fun myLogMessage(inputText: String){
@@ -165,7 +169,7 @@ class MainActivity : AppCompatActivity() {
       writer.use {
         it.write(inputText) }
     } catch (e:IOException){
-      Log.e("TAG", "无法写入data", e)
+      Log.e(TAG, "无法写入data", e)
     }
     try {
       val output = openFileOutput(anchorDataFileName, Context.MODE_APPEND)
@@ -173,7 +177,7 @@ class MainActivity : AppCompatActivity() {
       writer.use {
         it.write(inputText) }
     } catch (e:IOException){
-      Log.e("TAG", "无法写入data", e)
+      Log.e(TAG, "无法写入data", e)
     }
     try {
       val output = openFileOutput(markPointDataFileName, Context.MODE_APPEND)
@@ -181,7 +185,7 @@ class MainActivity : AppCompatActivity() {
       writer.use {
         it.write(inputText) }
     } catch (e:IOException){
-      Log.e("TAG", "无法写入data", e)
+      Log.e(TAG, "无法写入data", e)
     }
   }
   fun myTrackableLog(inputText: String){
@@ -193,9 +197,10 @@ class MainActivity : AppCompatActivity() {
       writer.use {
         it.write("$time\t$inputText\n") }
     } catch (e:IOException){
-      Log.e("TAG", "无法写入data", e)
+      Log.e(TAG, "无法写入data", e)
     }
   }
+
   fun onClickSetPoint(view: View?) {
     Log.d(TAG, "onClickSetPoint")
     try {
@@ -214,7 +219,49 @@ class MainActivity : AppCompatActivity() {
       }
       Toast.makeText(this, "已记录标记点！", Toast.LENGTH_SHORT).show()
     } catch (e:IOException){
-      Log.e("TAG", "无法写入data", e)
+      Log.e(TAG, "无法写入data", e)
+    }
+  }
+
+  fun onClickAugmentedIMG(view: View?){
+    try {
+//      imageDatabase = this.assets.open("imgdb/default.imgdb").use {
+//        Log.d(TAG, it.toString())
+//        Log.d(TAG, arCoreSessionHelper.session.toString())
+//        AugmentedImageDatabase.deserialize(arCoreSessionHelper.session, it)
+//      }
+      imageDatabase = AugmentedImageDatabase(arCoreSessionHelper.session)
+      val bitmap = assets.open("imgdb/000.jpg").use { BitmapFactory.decodeStream(it) }
+// If the physical size of the image is not known, use addImage(String, Bitmap) instead, at the
+// expense of an increased image detection time.如果图像的物理大小未知，请改用 addImage(String, Bitmap)，但会增加图像检测时间
+      val imageWidthInMeters = 0.156f // 10 cm
+      val dogIndex = imageDatabase.addImage("earth", bitmap, imageWidthInMeters)
+      val config = Config(arCoreSessionHelper.session)
+      config.augmentedImageDatabase = imageDatabase
+      config.focusMode = Config.FocusMode.AUTO
+      config.lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
+      // Depth API is used if it is configured in Hello AR's settings.
+      // 如果在 Hello AR 的设置中配置了深度 API，则会使用它。
+      config.depthMode =
+        if (arCoreSessionHelper.session?.isDepthModeSupported(Config.DepthMode.AUTOMATIC) == true) {
+          Config.DepthMode.AUTOMATIC
+        } else {
+          Config.DepthMode.DISABLED
+        }
+      // Instant Placement is used if it is configured in Hello AR's settings.
+      // 如果在 Hello AR 的设置中进行了配置，则使用 Instant Placement。
+      config.instantPlacementMode =
+        if (instantPlacementSettings.isInstantPlacementEnabled) {
+          InstantPlacementMode.LOCAL_Y_UP
+        } else {
+          InstantPlacementMode.DISABLED
+        }
+      pauseARCoreSession()
+      arCoreSessionHelper.session?.configure(config)
+      resumeARCoreSession()
+      Log.d(TAG, arCoreSessionHelper.session?.config?.augmentedImageDatabase?.numImages.toString())
+    }catch (e:IOException){
+      Log.e(TAG,"Can't build imgdb!")
     }
   }
 
@@ -223,6 +270,7 @@ class MainActivity : AppCompatActivity() {
   fun configureSession(session: Session) {
     session.configure(
       session.config.apply {
+        focusMode = Config.FocusMode.AUTO
         lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
         // Depth API is used if it is configured in Hello AR's settings.
         // 如果在 Hello AR 的设置中配置了深度 API，则会使用它。
@@ -240,7 +288,10 @@ class MainActivity : AppCompatActivity() {
           } else {
             InstantPlacementMode.DISABLED
           }
-
+//        val imageDatabase = assets.open("imgdb/default.imgdb").use {
+//          AugmentedImageDatabase.deserialize(session, it)
+//        }
+//        augmentedImageDatabase = imageDatabase
       }
     )
   }
