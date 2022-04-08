@@ -425,15 +425,9 @@ class HelloArRenderer(val activity: MainActivity) :
         val texture = virtualObjectAlbedoTexture
         virtualObjectShader.setTexture("u_AlbedoTexture", texture)
         render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
+        dataStr += String.format("\nx=%.3f\ty=%.3f\tz=%.3f", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz())
+        wrappedAnchors.add(WrappedAnchor(img.createAnchor(img.centerPose), img))
         Log.d(TAG, img.name+String.format(" %.3f\t%.3f\t%.3f\t", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz()))
-//        when (img.index) {
-//          0 -> Toast.makeText(activity, img.name+" "+img.centerPose.tx()+" "+img.centerPose.ty(), Toast.LENGTH_SHORT).show()
-//          1 -> Toast.makeText(activity, img.name+" "+img.centerPose.tx()+" "+img.centerPose.ty(), Toast.LENGTH_SHORT).show()
-//          2 -> {
-//            wrappedAnchors.add(WrappedAnchor(img.createAnchor(img.centerPose), img))
-//          }
-//          else -> Toast.makeText(activity, img.name+" "+img.centerPose.tx()+" "+img.centerPose.ty(), Toast.LENGTH_SHORT).show()
-//        }
       }
     }
 
@@ -449,9 +443,10 @@ class HelloArRenderer(val activity: MainActivity) :
       for ((i, value) in wrappedAnchors.withIndex()){
         if (value.anchor.trackingState != TrackingState.TRACKING)
           continue
-        val str = String.format("%.3f %.3f %.3f",  value.anchor.pose.tx(),  value.anchor.pose.ty(),  value.anchor.pose.tz())
+        val str = String.format("%.3f\t%.3f\t%.3f",  value.anchor.pose.tx(),  value.anchor.pose.ty(),  value.anchor.pose.tz())
         activity.myTrackableLog("Anchor$i\t$str")
       }
+
       myTimer = 1
     }
     // Compose the virtual scene with the background.

@@ -2,7 +2,7 @@
 <resources>
     <string name="record">开始录制</string>
     <string name="stop">停止</string>
-    <string name="app_name">室外坐标引入室内</string>
+    <string name="app_name">室内AR测量</string>
     <string name="button_text_enable_depth">打开</string>
     <string name="button_text_disable_depth">关闭</string>
     <string name="options_title_with_depth">该设备支持深度视觉</string>

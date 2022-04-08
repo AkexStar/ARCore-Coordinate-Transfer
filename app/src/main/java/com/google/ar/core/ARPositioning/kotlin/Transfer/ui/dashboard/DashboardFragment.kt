@@ -1,22 +1,25 @@
 package com.google.ar.core.ARPositioning.kotlin.Transfer.ui.dashboard
 
+
+import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.ar.core.ARPositioning.kotlin.Transfer.MainActivity
 import com.google.ar.core.ARPositioning.kotlin.Transfer.databinding.FragmentDashboardBinding
-import kotlin.math.log
+
 
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
-
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!

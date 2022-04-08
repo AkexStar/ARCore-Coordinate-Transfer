@@ -152,7 +152,6 @@ class MainActivity : AppCompatActivity() {
 
   fun myCameraLog(inputText: String){
     try {
-//      val dateFormat = SimpleDateFormat(TIMEPATTERN).format(Date()).toString()
       val time = LocalDateTime.now()
       val output = openFileOutput(cameraDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
@@ -167,7 +166,8 @@ class MainActivity : AppCompatActivity() {
       val output = openFileOutput(cameraDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write(inputText) }
+        it.write("-C$inputText") }
+      writer.close()
     } catch (e:IOException){
       Log.e(TAG, "无法写入data", e)
     }
@@ -175,7 +175,8 @@ class MainActivity : AppCompatActivity() {
       val output = openFileOutput(anchorDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write(inputText) }
+        it.write("-A$inputText") }
+      writer.close()
     } catch (e:IOException){
       Log.e(TAG, "无法写入data", e)
     }
@@ -183,14 +184,14 @@ class MainActivity : AppCompatActivity() {
       val output = openFileOutput(markPointDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
       writer.use {
-        it.write(inputText) }
+        it.write("-M$inputText") }
+      writer.close()
     } catch (e:IOException){
       Log.e(TAG, "无法写入data", e)
     }
   }
   fun myTrackableLog(inputText: String){
     try {
-//      val dateFormat = SimpleDateFormat(TIMEPATTERN).format(Date()).toString()
       val time = LocalDateTime.now()
       val output = openFileOutput(anchorDataFileName, Context.MODE_APPEND)
       val writer = BufferedWriter(OutputStreamWriter(output))
@@ -217,6 +218,7 @@ class MainActivity : AppCompatActivity() {
         inputPointName.setText(value.toString())
         it.write("$dateFormat\t"+pointName+"\t"+renderer.cameraStatus.toString()+"\n")
       }
+      writer.close()
       Toast.makeText(this, "已记录标记点！", Toast.LENGTH_SHORT).show()
     } catch (e:IOException){
       Log.e(TAG, "无法写入data", e)
@@ -248,8 +250,7 @@ class MainActivity : AppCompatActivity() {
         } else {
           Config.DepthMode.DISABLED
         }
-      // Instant Placement is used if it is configured in Hello AR's settings.
-      // 如果在 Hello AR 的设置中进行了配置，则使用 Instant Placement。
+      // 如果在设置中进行了配置，则使用 Instant Placement。
       config.instantPlacementMode =
         if (instantPlacementSettings.isInstantPlacementEnabled) {
           InstantPlacementMode.LOCAL_Y_UP
@@ -257,6 +258,7 @@ class MainActivity : AppCompatActivity() {
           InstantPlacementMode.DISABLED
         }
       pauseARCoreSession()
+      //只是暂停会话建库，坐标系还是连续的
       arCoreSessionHelper.session?.configure(config)
       resumeARCoreSession()
       Log.d(TAG, arCoreSessionHelper.session?.config?.augmentedImageDatabase?.numImages.toString())
@@ -402,7 +404,7 @@ class MainActivity : AppCompatActivity() {
       return false
     }
     view.surfaceView.onResume()
-    myLogMessage("------New Session------\n")
+    myLogMessage("----New Session------\n")
     return true
   }
 
