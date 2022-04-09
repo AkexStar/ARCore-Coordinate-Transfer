@@ -426,7 +426,7 @@ class HelloArRenderer(val activity: MainActivity) :
         virtualObjectShader.setTexture("u_AlbedoTexture", texture)
         render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
         dataStr += String.format("\nx=%.3f\ty=%.3f\tz=%.3f", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz())
-        wrappedAnchors.add(WrappedAnchor(img.createAnchor(img.centerPose), img))
+//        wrappedAnchors.add(WrappedAnchor(img.createAnchor(img.centerPose), img))
         Log.d(TAG, img.name+String.format(" %.3f\t%.3f\t%.3f\t", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz()))
       }
     }
