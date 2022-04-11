@@ -57,7 +57,7 @@ class ArView(val activity: MainActivity) : DefaultLifecycleObserver {
   override fun onResume(owner: LifecycleOwner) {
     activity.mHandler.sendEmptyMessage(0)
     surfaceView.onResume()
-    activity.myLogMessage("------New Session------\n")
+    activity.myLogMessage("----New Session------\n")
   }
 
   override fun onPause(owner: LifecycleOwner) {
@@ -116,10 +116,12 @@ class ArView(val activity: MainActivity) : DefaultLifecycleObserver {
     val checkboxes =
       booleanArrayOf(
         activity.depthSettings.useDepthForOcclusion(),
-        activity.depthSettings.depthColorVisualizationEnabled()
+        activity.depthSettings.depthColorVisualizationEnabled(),
+        activity.depthSettings.useDepthMap()
       )
     if (session.isDepthModeSupported(Config.DepthMode.AUTOMATIC)) {
       // With depth support, the user can select visualization options.
+      // 通过深度支持，用户可以选择可视化选项。
       val stringArray = resources.getStringArray(R.array.depth_options_array)
       AlertDialog.Builder(activity)
         .setTitle(R.string.options_title_with_depth)
@@ -129,6 +131,7 @@ class ArView(val activity: MainActivity) : DefaultLifecycleObserver {
         .setPositiveButton(R.string.done) { _, _ ->
           activity.depthSettings.setUseDepthForOcclusion(checkboxes[0])
           activity.depthSettings.setDepthColorVisualizationEnabled(checkboxes[1])
+          activity.depthSettings.setUseDepthMap(checkboxes[2])
         }
         .show()
     } else {

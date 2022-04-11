@@ -1,0 +1,8 @@
+earth|./000.jpg|0.95
+bar|./001.jpg|0.95
+piano|./002.jpg|0.95
+dog|./004.jpg|0.95
+coffee|./006.jpg|0.95
+fire|./007.jpg|0.95
+engine|./008.jpg|0.95
+flower|./009.jpg|0.95

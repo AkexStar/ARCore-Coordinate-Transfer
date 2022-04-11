@@ -18,7 +18,7 @@ precision mediump float;
 
 // This shader pair shows the depth estimation instead of the camera image as
 // the background. This behavior is mostly only useful as a demonstration of the
-// depth feature.
+// depth feature.此着色器对显示深度估计而不是相机图像作为背景。这种行为大多仅作为深度特征的演示有用。
 
 uniform sampler2D u_CameraDepthTexture;
 

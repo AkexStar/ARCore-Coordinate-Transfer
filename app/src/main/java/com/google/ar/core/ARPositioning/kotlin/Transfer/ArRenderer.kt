@@ -19,18 +19,13 @@ import android.opengl.GLES30
 import android.opengl.Matrix
 import android.os.Message
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.*
 import com.google.ar.core.ARPositioning.java.common.helpers.DisplayRotationHelper
 import com.google.ar.core.ARPositioning.java.common.helpers.TrackingStateHelper
-import com.google.ar.core.ARPositioning.java.common.samplerender.Framebuffer
-import com.google.ar.core.ARPositioning.java.common.samplerender.GLError
-import com.google.ar.core.ARPositioning.java.common.samplerender.Mesh
-import com.google.ar.core.ARPositioning.java.common.samplerender.SampleRender
-import com.google.ar.core.ARPositioning.java.common.samplerender.Shader
-import com.google.ar.core.ARPositioning.java.common.samplerender.Texture
-import com.google.ar.core.ARPositioning.java.common.samplerender.VertexBuffer
+import com.google.ar.core.ARPositioning.java.common.samplerender.*
 import com.google.ar.core.ARPositioning.java.common.samplerender.arcore.BackgroundRenderer
 import com.google.ar.core.ARPositioning.java.common.samplerender.arcore.PlaneRenderer
 import com.google.ar.core.ARPositioning.java.common.samplerender.arcore.SpecularCubemapFilter
@@ -38,6 +33,7 @@ import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import java.io.IOException
 import java.nio.ByteBuffer
+
 
 /** Renders the HelloAR application using our example Renderer. */
 class HelloArRenderer(val activity: MainActivity) :
@@ -151,7 +147,6 @@ class HelloArRenderer(val activity: MainActivity) :
       planeRenderer = PlaneRenderer(render)
       backgroundRenderer = BackgroundRenderer(render)
       virtualSceneFramebuffer = Framebuffer(render, /*width=*/ 1, /*height=*/ 1)
-
       cubemapFilter =
         SpecularCubemapFilter(render, CUBEMAP_RESOLUTION, CUBEMAP_NUMBER_OF_IMPORTANCE_SAMPLES)
       // Load environmental lighting values lookup table 加载环境照明值查找表
@@ -285,7 +280,7 @@ class HelloArRenderer(val activity: MainActivity) :
       }
     if (activity.appState == MainActivity.AppState.Playingback && // 停止播放就不再更新Frame
             activity.arCoreSessionHelper.session?.playbackStatus == PlaybackStatus.FINISHED){
-              activity.runOnUiThread{activity.stopPlayingback()}
+              activity.runOnUiThread{activity.stopPlayback()}
               return
     }
     val camera = frame.camera
@@ -306,6 +301,7 @@ class HelloArRenderer(val activity: MainActivity) :
     // used to draw the background camera image.
     // 必须每帧调用 BackgroundRenderer.updateDisplayGeometry 以更新用于绘制背景摄像机图像的坐标。
     backgroundRenderer.updateDisplayGeometry(frame)
+
     val shouldGetDepthImage =
       activity.depthSettings.useDepthForOcclusion() ||
         activity.depthSettings.depthColorVisualizationEnabled()
@@ -380,8 +376,8 @@ class HelloArRenderer(val activity: MainActivity) :
       camera.displayOrientedPose,
       projectionMatrix
     )
-    dataStr = String.format("Camera x=%.3f\ty=%.3f\tz=%.3f\n",camera.pose.tx(), camera.pose.ty(), camera.pose.tz())
     cameraStatus = CameraStatus(camera.pose.tx(), camera.pose.ty(), camera.pose.tz(), camera.trackingState)
+    dataStr = "Camera $cameraStatus"
     // -- Draw occluded virtual objects
     // Update lighting parameters in the shader
     updateLightEstimation(frame.lightEstimate, viewMatrix)
@@ -394,7 +390,7 @@ class HelloArRenderer(val activity: MainActivity) :
       // during calls to session.update() as ARCore refines its estimate of the world.
         // 获取 Anchor 在世界空间中的当前姿势。 Anchor 姿势在调用 session.update() 期间更新，因为 ARCore 改进了它对世界的估计。
       anchor.pose.toMatrix(modelMatrix, 0)
-      dataStr += String.format("x=%.3f\ty=%.3f\tz=%.3f\n", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
+      dataStr += String.format("\nx=%.3f\ty=%.3f\tz=%.3f", anchor.pose.tx(), anchor.pose.ty(), anchor.pose.tz())
       // Calculate model/view/projection matrices
       Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
       Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
@@ -413,6 +409,28 @@ class HelloArRenderer(val activity: MainActivity) :
       virtualObjectShader.setTexture("u_AlbedoTexture", texture)
       render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
     }
+
+    val updatedAugmentedImages = frame.getUpdatedTrackables(AugmentedImage::class.java)
+//    Log.d(TAG,updatedAugmentedImages.size.toString())
+    for (img in updatedAugmentedImages) {
+      if (img.trackingState == TrackingState.TRACKING) {
+        // Use getTrackingMethod() to determine whether the image is currently
+        // being tracked by the camera.
+        img.centerPose.toMatrix(modelMatrix, 0)
+        Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0)
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0)
+        // Update shader properties and draw
+        virtualObjectShader.setMat4("u_ModelView", modelViewMatrix)
+        virtualObjectShader.setMat4("u_ModelViewProjection", modelViewProjectionMatrix)
+        val texture = virtualObjectAlbedoTexture
+        virtualObjectShader.setTexture("u_AlbedoTexture", texture)
+        render.draw(virtualObjectMesh, virtualObjectShader, virtualSceneFramebuffer)
+        dataStr += String.format("\nx=%.3f\ty=%.3f\tz=%.3f", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz())
+//        wrappedAnchors.add(WrappedAnchor(img.createAnchor(img.centerPose), img))
+        Log.d(TAG, img.name+String.format(" %.3f\t%.3f\t%.3f\t", img.centerPose.tx(), img.centerPose.ty(), img.centerPose.tz()))
+      }
+    }
+
     Thread{
       activity.mHandler.sendMessage(Message.obtain().apply {
         what = 1
@@ -420,14 +438,15 @@ class HelloArRenderer(val activity: MainActivity) :
       })
     }.start()
     myTimer += 1
-    if (myTimer == 30){ //每30帧记录一次数据，相当于每秒
-      activity.myCameraLog(String.format("%.4f\t%.4f\t%.4f",camera.pose.tx(), camera.pose.ty(), camera.pose.tz()))
+    if (myTimer == 15){ //每30帧记录一次数据，相当于每秒
+      activity.myCameraLog(cameraStatus.toString())
       for ((i, value) in wrappedAnchors.withIndex()){
         if (value.anchor.trackingState != TrackingState.TRACKING)
           continue
-        val str = String.format("%.3f %.3f %.3f",  value.anchor.pose.tx(),  value.anchor.pose.ty(),  value.anchor.pose.tz())
+        val str = String.format("%.3f\t%.3f\t%.3f",  value.anchor.pose.tx(),  value.anchor.pose.ty(),  value.anchor.pose.tz())
         activity.myTrackableLog("Anchor$i\t$str")
       }
+
       myTimer = 1
     }
     // Compose the virtual scene with the background.
@@ -438,7 +457,8 @@ class HelloArRenderer(val activity: MainActivity) :
   private fun Session.hasTrackingPlane() =
     getAllTrackables(Plane::class.java).any { it.trackingState == TrackingState.TRACKING }
 
-  /** Update state based on the current frame's light estimation. */
+  /** Update state based on the current frame's light estimation.
+   * 根据当前帧的光照估计更新状态。*/
   private fun updateLightEstimation(lightEstimate: LightEstimate, viewMatrix: FloatArray) {
     if (lightEstimate.state != LightEstimate.State.VALID) {
       virtualObjectShader.setBool("u_LightEstimateIsValid", false)
@@ -564,6 +584,7 @@ private data class WrappedAnchor(
   val anchor: Anchor,
   val trackable: Trackable,
 )
+
 data class CameraStatus(
   val x: Float,
   val y: Float,
@@ -571,6 +592,6 @@ data class CameraStatus(
   val trackingState: TrackingState,
 ){
   override fun toString(): String {
-    return String.format("%.4f\t%.4f\t%.4f\t", x, y, z) + trackingState.toString()
+    return String.format("%.3f\t%.3f\t%.3f\t", x, y, z) + trackingState.toString()
   }
 }
