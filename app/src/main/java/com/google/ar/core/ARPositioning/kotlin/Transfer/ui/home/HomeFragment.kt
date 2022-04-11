@@ -24,6 +24,7 @@ import com.amap.api.maps.AMap
 import com.amap.api.maps.CameraUpdateFactory
 import com.amap.api.maps.model.CustomMapStyleOptions
 import com.amap.api.maps.model.MyLocationStyle
+import com.amap.api.services.core.ServiceSettings
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.ar.core.ARPositioning.kotlin.Transfer.GPSUtil
 import com.google.ar.core.ARPositioning.kotlin.Transfer.databinding.FragmentHomeBinding
@@ -94,6 +95,8 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
         initPermission()
+        ServiceSettings.updatePrivacyShow(context, true, true);
+        ServiceSettings.updatePrivacyAgree(context,true);
         aMap = binding.map.map
         aMap.uiSettings.isZoomControlsEnabled = true
         aMap.setCustomMapStyle(

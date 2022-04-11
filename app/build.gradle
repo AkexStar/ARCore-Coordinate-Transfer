@@ -2,14 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('D:\\Android\\keystore\\ARPositioning.jks')
-            storePassword '159468'
-            keyAlias 'ARPositioning'
-            keyPassword '159468'
-        }
-    }
     compileSdkVersion 31
     defaultConfig {
         applicationId "com.Alex.ARCore.ARPositioning"
